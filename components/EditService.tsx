@@ -24,7 +24,6 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 
 interface EditServiceProps {
-<<<<<<< HEAD
    serviceId: number;
    serviceName: string;
    serviceImage: string;
@@ -46,29 +45,6 @@ const EditService: React.FC<EditServiceProps> = ({
       serviceImage: serviceImage,
    });
    const [type, setType] = useState(serviceType);
-=======
-  serviceId: number;
-  serviceName: string;
-  serviceImage: string;
-  serviceDescription: string;
-  serviceType: string;
-}
-
-const EditService: React.FC<EditServiceProps> = ({
-  serviceId,
-  serviceName,
-  serviceImage,
-  serviceDescription,
-  serviceType,
-}: EditServiceProps) => {
-  const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    serviceName: serviceName,
-    serviceDescription: serviceDescription,
-    serviceImage: serviceImage,
-  });
-  const [type, setType] = useState(serviceType);
->>>>>>> 2cc34c3ce5263618fee76240892faaab5d161e06
 
    const handleInputChange = (event: any) => {
       const { name, value } = event.target;
