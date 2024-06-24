@@ -8,6 +8,14 @@ datasource db {
   relationMode = "prisma"
 }
 
+model Customer {
+  customer_id    Int                  @id @default(autoincrement())
+  customer_name  String
+  customer_email  String
+  customer_phone String @unique
+  customer_address String
+}
+
 model Service {
   service_id    Int    @id @default(autoincrement())
   service_name  String

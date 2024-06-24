@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "./ui/input";
 import { Pencil } from "lucide-react";
+import { toast } from "./ui/use-toast";
 
 const schema = z.object({
   typeOfRepair: z.string().min(1, "Type of repair is required"),
@@ -89,7 +90,10 @@ const EditModelCategory = ({
       setLoading(false);
       window.location.reload();
     } catch (error) {
-      console.error("An error occurred:", error);
+      toast({
+        title: "An error occurred",
+        description: "Check your internet connection.",
+      });
       setLoading(false);
     }
   }
@@ -103,7 +107,7 @@ const EditModelCategory = ({
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Edit ${typeOfRepair}</DialogTitle>
+          <DialogTitle>Edit {typeOfRepair}</DialogTitle>
         </DialogHeader>
 
         <Form {...methods}>

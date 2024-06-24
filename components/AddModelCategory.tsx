@@ -78,10 +78,6 @@ const AddModelCategory = ({ modelId }: AddModelCategoryProps) => {
         <Button>Add new</Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add Category</DialogTitle>
-        </DialogHeader>
-
         <Form {...methods}>
           <form onSubmit={handleSubmit(onSubmit)} className="grid gap-4 py-4">
             <FormField

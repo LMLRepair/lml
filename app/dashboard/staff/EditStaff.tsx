@@ -31,6 +31,9 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Pencil } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
+import { set } from "date-fns";
 
 const schema = z.object({
   staffName: z.string().min(1, "Staff name is required"),
@@ -60,7 +63,9 @@ const EditStaff = ({
   location,
 }: EditStaffProps) => {
   const [loading, setLoading] = useState(false);
-
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
   const methods = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -91,15 +96,19 @@ const EditStaff = ({
       });
 
       setLoading(false);
-      window.location.reload();
+      setDialogOpen(false);
+      router.refresh();
     } catch (error) {
-      console.error("An error occurred:", error);
+      toast({
+        title: "Email already exists",
+        description: "Try again with a different Email.",
+      });
       setLoading(false);
     }
   }
 
   return (
-    <Dialog>
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button variant="default">
           <Pencil />
