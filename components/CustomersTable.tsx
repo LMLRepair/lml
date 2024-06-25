@@ -1,5 +1,4 @@
 "use client";
-
 import { Search } from "lucide-react";
 import Image from "next/image";
 import CustomContainer from "./CustomContainer";
@@ -19,6 +18,7 @@ import EditCustomer from "./EditCustomer";
 import AddCustomer from "./AddCustomer";
 import UploadCustomers from "./UploadCustomers";
 import DeleteCustomer from "./DeleteCustomer";
+
 
 interface CustomersTableProps {
   customers: Customer[];
@@ -85,6 +85,7 @@ function CustomersTable({ customers }: CustomersTableProps) {
               <TableCell>
                 <DeleteCustomer customerId={customer.customer_id} />
               </TableCell>
+
             </TableRow>
           ))}
         </TableBody>

@@ -28,6 +28,7 @@ export const createCustomer = async (
   }
 };
 
+
 export const createBulkCustomer = async (
   customerData: Omit<Customer, "customer_id">[]
 ) => {
@@ -61,6 +62,7 @@ export const updateCustomer = async (
   }
 };
 
+
 export const deleteCustomer = async (customerId: number) => {
   try {
     await prisma.customer.delete({
@@ -75,3 +77,4 @@ export const deleteCustomer = async (customerId: number) => {
     await prisma.$disconnect();
   }
 };
+
