@@ -3,25 +3,23 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/components/ui/use-toast';
-import { updateLocation } from '@/lib/db/ItemLocationCrud';
+import { getVendor, updateVendor } from '@/lib/db/itemVendorsCrud';
 import { useModal } from '@/providers/model-provider';
 import { CircleDashedIcon, X } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { useEffect, useTransition } from 'react';
 import { SubmitHandler, useForm } from 'react-hook-form';
 
 type Inputs = {
    name: string;
-   description: string;
 };
 
-type LocationProps = {
-   locationId: number;
+type VendorProps = {
+   vendorId: number;
 };
 
-export default function EditLocationForm({ locationId }: LocationProps) {
+export default function EditVendorForm({ vendorId }: VendorProps) {
    const { setClose } = useModal();
 
    const router = useRouter();
@@ -31,31 +29,46 @@ export default function EditLocationForm({ locationId }: LocationProps) {
       register,
       handleSubmit,
       control,
+      setValue,
       formState: { errors },
    } = useForm<Inputs>();
+
+   useEffect(() => {
+      const fetchVendor = async () => {
+         try {
+            const res = await getVendor(vendorId);
+            setValue('name', res.name);
+            // setValue('description', res.description);
+         } catch (error) {
+            console.log(error);
+         }
+      };
+
+      fetchVendor();
+   }, [vendorId]);
 
    //Todo: Handle form submission
    const onSubmit: SubmitHandler<Inputs> = (data) => {
       startTransition(async () => {
          try {
-            const res = await updateLocation(locationId, {
+            const res = await updateVendor(vendorId, {
                name: data.name,
-               description: data.description,
+               //    description: data.description,
             });
 
             if (res.status === 'success') {
                toast({
-                  title: 'Location updated successfully',
-                  description: 'The location has been updated successfully.',
+                  title: 'Vendor updated successfully',
+                  description: 'The Vendor has been updated successfully.',
                });
-               router.push('/dashboard/inventory/locations');
+               router.refresh();
                setClose();
             }
          } catch (error) {
             console.log(error);
             toast({
                title: 'An error occurred',
-               description: 'Failed to update the location.',
+               description: 'Failed to update the Vendor.',
             });
          }
       });
@@ -63,13 +76,13 @@ export default function EditLocationForm({ locationId }: LocationProps) {
 
    return (
       <div className='flex items-center justify-center h-screen'>
-         <div className='m-auto  p-8 rounded-lg  w-1/2'>
+         <div className='m-auto p-10 rounded-lg  w-1/2'>
             <div className='flex justify-between items-center mb-8'>
                <Button variant={'ghost'} onClick={() => setClose()}>
                   <X className='h-6 w-6' />
                </Button>
 
-               <h1 className='text-2xl font-semibold'>Edit Location</h1>
+               <h1 className='text-2xl font-semibold'>Edit Vendor</h1>
                <Button variant='default' onClick={handleSubmit(onSubmit)}>
                   {isPending ? (
                      <>
@@ -83,23 +96,23 @@ export default function EditLocationForm({ locationId }: LocationProps) {
             <div>
                <h2 className='text-lg font-medium mb-4'>Details</h2>
                <div className='space-y-4'>
-                  <div className='flex flex-col'>
-                     <Label htmlFor='location'>Location</Label>
+                  <div className='flex flex-col gap-2'>
+                     <Label htmlFor='name'>Vendor</Label>
                      <Input
-                        id='location'
-                        placeholder='e.g Seattle Warehouse A'
+                        id='name'
+                        placeholder='e.g Apple'
                         {...register('name')}
                      />
                   </div>
-                  <div className='flex flex-col'>
+                  {/* <div className='flex flex-col'>
                      <Label htmlFor='description'>Description</Label>
                      <Textarea
                         id='description'
-                        placeholder='e.g Main warehouse for storing inventory items.'
+                        placeholder='e.g This is Apple brand.'
                         className='min-h-[100px]'
                         {...register('description')}
                      />
-                  </div>
+                  </div> */}
                </div>
             </div>
          </div>

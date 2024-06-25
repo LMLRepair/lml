@@ -16,8 +16,11 @@ import { AddCategoryDialog } from './AddCategoryDialog';
 import { Input } from './ui/input';
 import { useState } from 'react';
 import { InventoryItem } from '@prisma/client';
+import { useRouter } from 'next/navigation';
+import { Button } from './ui/button';
 
 function CategoryTable({ categories }: any) {
+   const router = useRouter();
    const [search, setSearch] = useState('');
 
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -45,6 +48,9 @@ function CategoryTable({ categories }: any) {
                      <DatePickerDemo />
                   </div> */}
                   <AddCategoryDialog />
+                  <Button type='button' onClick={() => router.back()}>
+                     Go Back
+                  </Button>
                </div>
             </div>
 

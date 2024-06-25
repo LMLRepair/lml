@@ -12,6 +12,7 @@ export const getInventoryItems = async (): Promise<InventoryItem[]> => {
             itemsSubCategory: true,
             vendor: true,
             location: true,
+            brand: true,
          },
          orderBy: { inventoryItemId: 'asc' },
       });

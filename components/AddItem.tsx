@@ -1,9 +1,11 @@
 'use client';
 
+import { getInventoryBrands } from '@/lib/db/itemBranCrud';
 import { getCategory, getSubCategory } from '@/lib/db/ItemCategoryCrud';
 import { getLocations } from '@/lib/db/ItemLocationCrud';
+import { getVendors } from '@/lib/db/itemVendorsCrud';
 import { useModal } from '@/providers/model-provider';
-import { CircleDashedIcon, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import { useTransition } from 'react';
 import CreateNewItemForm from '../forms/CreateItemForm';
 import { Button } from './ui/button';
@@ -21,6 +23,8 @@ export function AddItemDialog() {
             const categories = await getCategory();
             const subCategories = await getSubCategory();
             const locations = await getLocations();
+            const brands = await getInventoryBrands();
+            const vendors = await getVendors();
 
             setOpen({
                content: (
@@ -28,6 +32,8 @@ export function AddItemDialog() {
                      categories={categories}
                      subCategories={subCategories}
                      locations={locations}
+                     brands={brands}
+                     vendors={vendors}
                   />
                ),
             });

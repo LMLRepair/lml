@@ -2,9 +2,11 @@
 
 import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
-import { AddLocationDialog } from './AddLocation';
-import { EditLocationDialog } from './EditLocation';
+import { AddVendorDialog } from './AddVendorDialog';
+import { EditVendorDialog } from './EditVendorDialog';
+import { Button } from './ui/button';
 import { Card } from './ui/card';
 import {
    Table,
@@ -14,10 +16,8 @@ import {
    TableHeader,
    TableRow,
 } from './ui/table';
-import { Button } from './ui/button';
-import { useRouter } from 'next/navigation';
 
-function CategoryTable({ locations }: any) {
+function VendorsTable({ vendors }: any) {
    const router = useRouter();
    const [search, setSearch] = useState('');
 
@@ -26,10 +26,10 @@ function CategoryTable({ locations }: any) {
       setSearch(inputValue);
    };
 
-   const filteredItems = locations.filter((location: any) => {
+   const filteredItems = vendors.filter((vendor: any) => {
       return (
          search.toLowerCase() === '' ||
-         location.name.toLowerCase().includes(search.toLocaleLowerCase())
+         vendor.name.toLowerCase().includes(search.toLocaleLowerCase())
       );
    });
    return (
@@ -37,11 +37,11 @@ function CategoryTable({ locations }: any) {
          <div className='space-y-3'>
             <div className='flex items-center justify-between'>
                <div className='space-y-1'>
-                  <h1 className='text-2xl font-medium'>Locations</h1>
-                  <p className='text-sm'>Manage your Locations</p>
+                  <h1 className='text-2xl font-medium'>Vendors</h1>
+                  <p className='text-sm'>Manage your Vendors</p>
                </div>
                <div className='flex items-center gap-3'>
-                  <AddLocationDialog />
+                  <AddVendorDialog />
                   <Button type='button' onClick={() => router.back()}>
                      Go Back
                   </Button>
@@ -49,7 +49,7 @@ function CategoryTable({ locations }: any) {
             </div>
 
             <Input
-               placeholder='Search Location. . . . .'
+               placeholder='Search Vendors. . . . .'
                className='max-w-96 '
                onChange={handleInputChange}
             />
@@ -59,29 +59,27 @@ function CategoryTable({ locations }: any) {
                <Table>
                   <TableHeader>
                      <TableRow>
-                        <TableHead className='lg:w-80'>Location</TableHead>
-                        <TableHead>Description</TableHead>
-                        <TableHead>Items in Location</TableHead>
+                        <TableHead className='lg:w-80'>Vendor</TableHead>
+                        <TableHead>Items in Vendor</TableHead>
                         <TableHead>Actions</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody>
                      {filteredItems &&
-                        filteredItems.map((locate: any) => (
-                           <TableRow key={locate.locationId}>
+                        filteredItems.map((vendor: any) => (
+                           <TableRow key={vendor.vendorId}>
                               <TableCell className='lg;w-96'>
-                                 {locate.name}
+                                 {vendor.name}
                               </TableCell>
-                              <TableCell className='space-x-1 text-green-500 font-medium'>
-                                 {locate.description}
-                              </TableCell>
+
                               <TableCell>
-                                 {locate.items && locate.items.length}
+                                 {vendor.InventoryItem &&
+                                    vendor.InventoryItem.length}
                               </TableCell>
                               <TableCell>
                                  <div className='flex items-center gap-3'>
-                                    <EditLocationDialog
-                                       locationId={locate.locationId}
+                                    <EditVendorDialog
+                                       vendorId={vendor.vendorId}
                                     />
 
                                     <Trash2
@@ -100,4 +98,4 @@ function CategoryTable({ locations }: any) {
    );
 }
 
-export default CategoryTable;
+export default VendorsTable;

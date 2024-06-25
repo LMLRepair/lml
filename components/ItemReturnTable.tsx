@@ -15,8 +15,11 @@ import {
    TableHeader,
    TableRow,
 } from './ui/table';
+import { useRouter } from 'next/navigation';
+import { Button } from './ui/button';
 
 function ItemReturnTable({ returnedItems }: any) {
+   const router = useRouter();
    const [search, setSearch] = useState('');
 
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,7 +42,12 @@ function ItemReturnTable({ returnedItems }: any) {
                <h1 className='text-2xl font-medium'>Return Items List</h1>
                <p className='text-sm'>Here all Returned Items data</p>
             </div>
-            <AddReturnItemDialog />
+            <div className='flex items-center gap-5'>
+               <AddReturnItemDialog />
+               <Button type='button' onClick={() => router.back()}>
+                  Go Back
+               </Button>
+            </div>
          </div>
          <Input
             placeholder='Search Item Return...'

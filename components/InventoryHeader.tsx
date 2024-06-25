@@ -26,6 +26,12 @@ function InventoryHeader() {
             <Link href={'/dashboard/inventory/locations'}>
                <Button className='w-24'>Locations</Button>
             </Link>
+            <Link href={'/dashboard/inventory/itemBrands'}>
+               <Button className='w-24'>Brands</Button>
+            </Link>
+            <Link href={'/dashboard/inventory/vendors'}>
+               <Button className='w-24'>Vendors</Button>
+            </Link>
             <DropdownMenu>
                <DropdownMenuTrigger>
                   <Button className='space-x-1'>

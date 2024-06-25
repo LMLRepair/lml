@@ -145,7 +145,7 @@ function CreateCategoryForm() {
                   <Button
                      type='button'
                      variant='default'
-                     className='flex items-center space-x-1'
+                     className='flex items-center space-x-1 '
                      onClick={handleAddSubCategory}
                   >
                      <PlusIcon size={20} />

@@ -82,12 +82,30 @@ export const Location = [
    },
 ];
 
+export const InventoryItemBrand = [
+   {
+      brandInventoryId: 1,
+      brandInventoryName: 'Apple',
+      description: 'This is Apple Brand',
+   },
+   {
+      brandInventoryId: 2,
+      brandInventoryName: 'Samsung',
+      description: 'This is Samsung Brand',
+   },
+   {
+      brandInventoryId: 3,
+      brandInventoryName: 'Logitech',
+      description: 'This is Logitech Brand',
+   },
+];
+
 export const InventoryItem = [
    {
       inventoryItemId: 1,
       name: 'iPhone 11 LCD Screen Replacement Aftermarket AM',
       description: 'Replacement screen for iPhone 11',
-      brand: 'Apple',
+      brandId: 1,
       image: '/iphone11/test.jpg',
       itemsCategoryId: 1, // Parts
       vendorId: 1, // TechParts Co.
@@ -99,11 +117,9 @@ export const InventoryItem = [
       name: 'Samsung Galaxy S20 Ultra Screen Protector',
       description:
          'Tempered glass screen protector for Samsung Galaxy S20 Ultra',
-
-      brand: 'Samsung',
+      brandId: 2,
       image: '/samsungs20ultra/test.jpg',
       itemsCategoryId: 3, // Accessories
-
       vendorId: 2, // ScreenGuard Inc.
       itemsSubCategoryId: 16, // Screen Protectors
       locationId: 2, // Retail Store 1
@@ -113,11 +129,9 @@ export const InventoryItem = [
       name: 'Logitech G502 HERO Gaming Mouse',
       description:
          'Wired gaming mouse with customizable RGB lighting and 11 programmable buttons',
-
-      brand: 'Logitech',
+      brandId: 3,
       image: '/logitechg502/test.jpg',
       itemsCategoryId: 2, // Equipments
-
       vendorId: 3, // Logitech Official
       itemsSubCategoryId: 12, // Tools
       locationId: 3, // Warehouse B
@@ -126,11 +140,9 @@ export const InventoryItem = [
       inventoryItemId: 4,
       name: 'Apple AirPods Pro',
       description: 'Wireless Bluetooth earbuds with active noise cancellation',
-
-      brand: 'Apple',
+      brandId: 1,
       image: '/appleairpods/test.jpg',
       itemsCategoryId: 4, // Devices
-
       vendorId: 4, // Apple Store
       itemsSubCategoryId: 20, // Watch
       locationId: 4, // Retail Store 2

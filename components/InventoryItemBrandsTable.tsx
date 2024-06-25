@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { AddLocationDialog } from './AddLocation';
-import { EditLocationDialog } from './EditLocation';
 import { Card } from './ui/card';
 import {
    Table,
@@ -14,10 +13,12 @@ import {
    TableHeader,
    TableRow,
 } from './ui/table';
-import { Button } from './ui/button';
+import { AddInventoryItemBrandDialog } from './AddInventoryItemBrandDialog';
+import { EditInventoryItemBrandDialog } from './EditInventoryItemBrandDialog';
 import { useRouter } from 'next/navigation';
+import { Button } from './ui/button';
 
-function CategoryTable({ locations }: any) {
+function InventoryItemBrandTable({ brands }: any) {
    const router = useRouter();
    const [search, setSearch] = useState('');
 
@@ -26,10 +27,12 @@ function CategoryTable({ locations }: any) {
       setSearch(inputValue);
    };
 
-   const filteredItems = locations.filter((location: any) => {
+   const filteredItems = brands.filter((brand: any) => {
       return (
          search.toLowerCase() === '' ||
-         location.name.toLowerCase().includes(search.toLocaleLowerCase())
+         brand.brandInventoryName
+            .toLowerCase()
+            .includes(search.toLocaleLowerCase())
       );
    });
    return (
@@ -37,11 +40,11 @@ function CategoryTable({ locations }: any) {
          <div className='space-y-3'>
             <div className='flex items-center justify-between'>
                <div className='space-y-1'>
-                  <h1 className='text-2xl font-medium'>Locations</h1>
-                  <p className='text-sm'>Manage your Locations</p>
+                  <h1 className='text-2xl font-medium'>Brands</h1>
+                  <p className='text-sm'>Manage your Brands</p>
                </div>
                <div className='flex items-center gap-3'>
-                  <AddLocationDialog />
+                  <AddInventoryItemBrandDialog />
                   <Button type='button' onClick={() => router.back()}>
                      Go Back
                   </Button>
@@ -59,29 +62,29 @@ function CategoryTable({ locations }: any) {
                <Table>
                   <TableHeader>
                      <TableRow>
-                        <TableHead className='lg:w-80'>Location</TableHead>
+                        <TableHead className='lg:w-80'>Brand</TableHead>
                         <TableHead>Description</TableHead>
-                        <TableHead>Items in Location</TableHead>
+                        <TableHead>Items in Brand</TableHead>
                         <TableHead>Actions</TableHead>
                      </TableRow>
                   </TableHeader>
                   <TableBody>
                      {filteredItems &&
-                        filteredItems.map((locate: any) => (
-                           <TableRow key={locate.locationId}>
+                        filteredItems.map((brand: any) => (
+                           <TableRow key={brand.brandInventoryId}>
                               <TableCell className='lg;w-96'>
-                                 {locate.name}
+                                 {brand.brandInventoryName}
                               </TableCell>
                               <TableCell className='space-x-1 text-green-500 font-medium'>
-                                 {locate.description}
+                                 {brand.description}
                               </TableCell>
                               <TableCell>
-                                 {locate.items && locate.items.length}
+                                 {brand.items && brand.items.length}
                               </TableCell>
                               <TableCell>
                                  <div className='flex items-center gap-3'>
-                                    <EditLocationDialog
-                                       locationId={locate.locationId}
+                                    <EditInventoryItemBrandDialog
+                                       brandId={brand.brandInventoryId}
                                     />
 
                                     <Trash2
@@ -100,4 +103,4 @@ function CategoryTable({ locations }: any) {
    );
 }
 
-export default CategoryTable;
+export default InventoryItemBrandTable;

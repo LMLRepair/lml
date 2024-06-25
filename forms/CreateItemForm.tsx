@@ -17,8 +17,16 @@ import {
    TooltipProvider,
    TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { createInventoryItem } from '@/lib/db/InventoryItemCrud';
 import { useModal } from '@/providers/model-provider';
-import { ItemsCategory, ItemsSubCategory, Location } from '@prisma/client';
+import {
+   InventoryItemBrand,
+   ItemsCategory,
+   ItemsSubCategory,
+   Location,
+   Vendor,
+} from '@prisma/client';
+import { PutBlobResult } from '@vercel/blob';
 import { CircleDashedIcon, ShieldQuestion, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -26,8 +34,7 @@ import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useToast } from '../components/ui/use-toast';
 import VariationsDialog from '../components/VariatinosDialog';
 import VariationTable from '../components/VariationsTable';
-import { PutBlobResult } from '@vercel/blob';
-import { createInventoryItem } from '@/lib/db/InventoryItemCrud';
+import Image from 'next/image';
 
 type Inputs = {
    item: string;
@@ -44,6 +51,8 @@ type CreateNewItemProps = {
    categories: ItemsCategory[];
    subCategories: ItemsSubCategory[];
    locations: Location[];
+   brands: InventoryItemBrand[];
+   vendors: Vendor[];
 };
 
 type Variation = {
@@ -58,6 +67,8 @@ function CreateNewItemForm({
    categories,
    subCategories,
    locations,
+   brands,
+   vendors,
 }: CreateNewItemProps) {
    const router = useRouter();
    const { toast } = useToast();
@@ -71,11 +82,15 @@ function CreateNewItemForm({
       formState: { errors },
    } = useForm<Inputs>();
    const [image, setImage] = useState<File | null | string>(null);
+   const [preview, setPreview] = useState<any>(null);
    const [variationsData, setVariationsData] = useState<Variation[]>([]);
 
    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
          setImage(e.target.files[0]);
+         //Todo: Create a preview URL for the selected image
+         const previewURL = URL.createObjectURL(e.target.files[0]);
+         setPreview(previewURL);
       }
    };
 
@@ -176,6 +191,7 @@ function CreateNewItemForm({
       });
    };
 
+   console.log(brands);
    return (
       <div className='flex flex-col'>
          <div className='flex items-center justify-between p-6 bg-white '>
@@ -200,17 +216,32 @@ function CreateNewItemForm({
          </div>
          <div className='flex flex-col items-center p-6 space-y-4'>
             <h1 className='font-bold text-lg'>Details</h1>
+            {/* <div className='flex '> */}
             <form
                className='space-y-4 w-full max-w-lg'
                onSubmit={handleSubmit(onSubmit)}
             >
                <div>
-                  <Label className='block mb-1'>Item</Label>
-                  <Input
-                     placeholder='e.g Iphone 12'
-                     className='w-full'
-                     {...register('item', { required: true })}
-                  />
+                  <div className='flex items-center gap-10 space-x-4'>
+                     <div className='w-full space-y-1'>
+                        <Label className='block mb-1'>Item</Label>
+
+                        <Input
+                           placeholder='e.g Iphone 12'
+                           className='w-full'
+                           {...register('item', { required: true })}
+                        />
+                     </div>
+                     {preview && (
+                        <Image
+                           src={preview}
+                           width={100}
+                           height={100}
+                           alt='Preview-image'
+                           className='transition-all rounded-2xl border border-yellow-300  aspect-square'
+                        />
+                     )}
+                  </div>
                   {errors.item && (
                      <span className='text-red-500'>
                         This field is required
@@ -282,10 +313,31 @@ function CreateNewItemForm({
 
                <div className='space-y-4'>
                   <Label className='block mb-1'>Vendor</Label>
-                  <Input
-                     placeholder='Vendor'
-                     className='w-full'
-                     {...register('vendor', { required: true })}
+                  <Controller
+                     name='vendor'
+                     control={control}
+                     defaultValue=''
+                     render={({ field }) => (
+                        <Select
+                           onValueChange={field.onChange}
+                           value={field.value}
+                        >
+                           <SelectTrigger>
+                              <SelectValue placeholder='Select a vendor' />
+                           </SelectTrigger>
+                           <SelectContent>
+                              {vendors.map((vendor) => (
+                                 <SelectItem
+                                    key={vendor.vendorId}
+                                    value={String(vendor.vendorId)}
+                                 >
+                                    {vendor.name}
+                                 </SelectItem>
+                              ))}
+                           </SelectContent>
+                        </Select>
+                     )}
+                     rules={{ required: true }}
                   />
                   {errors.vendor && (
                      <span className='text-red-500'>
@@ -295,10 +347,31 @@ function CreateNewItemForm({
                </div>
                <div className='space-y-4'>
                   <Label className='block mb-1'>Brand</Label>
-                  <Input
-                     placeholder='Brand'
-                     className='w-full'
-                     {...register('brand', { required: true })}
+                  <Controller
+                     name='brand'
+                     control={control}
+                     defaultValue=''
+                     render={({ field }) => (
+                        <Select
+                           onValueChange={field.onChange}
+                           value={field.value}
+                        >
+                           <SelectTrigger>
+                              <SelectValue placeholder='Select a brand' />
+                           </SelectTrigger>
+                           <SelectContent>
+                              {brands.map((brand) => (
+                                 <SelectItem
+                                    key={brand.brandInventoryId}
+                                    value={String(brand.brandInventoryId)}
+                                 >
+                                    {brand.brandInventoryName}
+                                 </SelectItem>
+                              ))}
+                           </SelectContent>
+                        </Select>
+                     )}
+                     rules={{ required: true }}
                   />
                   {errors.brand && (
                      <span className='text-red-500'>
@@ -464,6 +537,7 @@ function CreateNewItemForm({
                   )}
                </div>
             </form>
+            {/* </div> */}
          </div>
       </div>
    );

@@ -6,8 +6,7 @@ import { Label } from '@/components/ui/label';
 import { updateCategory } from '@/lib/db/ItemCategoryCrud';
 import { useModal } from '@/providers/model-provider';
 import { ItemsCategory, ItemsSubCategory } from '@prisma/client';
-import { CircleDashedIcon, X } from 'lucide-react';
-import Link from 'next/link';
+import { CircleDashedIcon, Trash2, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -19,6 +18,12 @@ type EditCategoriesProps = {
    categoryId: number;
 };
 
+type SubCategoryState = {
+   name: string;
+   isNew: boolean;
+   id?: number;
+};
+
 export default function EditCategoryForm({
    categories,
    categoryId,
@@ -27,7 +32,18 @@ export default function EditCategoryForm({
    const router = useRouter();
    const { setClose } = useModal();
    const { register, handleSubmit } = useForm();
-   const [subCategories, setSubCategories] = useState<string[]>([]);
+   const [subCategories, setSubCategories] = useState<SubCategoryState[]>(
+      itemSubCategories
+         .filter((subCategory) => subCategory.categoryId === Number(categoryId))
+         .map((subCategory) => ({
+            name: subCategory.name,
+            isNew: false,
+            id: subCategory.itemsSubCategoryId,
+         }))
+   );
+   const [removedSubCategoryIds, setRemovedSubCategoryIds] = useState<number[]>(
+      []
+   );
    const [isPending, startTransition] = useTransition();
    const { toast } = useToast();
 
@@ -35,39 +51,60 @@ export default function EditCategoryForm({
       (category) => category.itemsCategoryId === Number(categoryId)
    );
 
-   const subCategoriesSelected = itemSubCategories.filter(
-      (subCategory) => subCategory.categoryId === Number(categoryId)
-   );
-
    const handleAddSubCategory = () => {
-      setSubCategories([...subCategories, '']);
+      setSubCategories([...subCategories, { name: '', isNew: true }]);
    };
 
    const handleSubCategoryChange = (index: number, value: string) => {
       const updatedSubCategories = [...subCategories];
-      updatedSubCategories[index] = value;
+      updatedSubCategories[index] = {
+         ...updatedSubCategories[index],
+         name: value,
+      };
+      setSubCategories(updatedSubCategories);
+   };
+
+   const handleRemoveSubCategory = (index: number) => {
+      const updatedSubCategories = [...subCategories];
+      const removedSubCategory = updatedSubCategories.splice(index, 1)[0];
+      if (!removedSubCategory.isNew && removedSubCategory.id) {
+         setRemovedSubCategoryIds([
+            ...removedSubCategoryIds,
+            removedSubCategory.id,
+         ]);
+      }
       setSubCategories(updatedSubCategories);
    };
 
    const onSubmit = (data: any) => {
       startTransition(async () => {
          try {
+            const existingSubCategories = subCategories.filter(
+               (subCategory) => !subCategory.isNew
+            );
+            const newSubCategories = subCategories.filter(
+               (subCategory) => subCategory.isNew
+            );
+
             const res = await updateCategory(categoryId, {
                name: data.category,
-               subCategories: subCategoriesSelected.map(
+               subCategories: existingSubCategories.map(
                   (subCategory, index) => ({
-                     itemsSubCategoryId: subCategory.itemsSubCategoryId,
-                     name: data.subCategory[index],
+                     itemsSubCategoryId: subCategory.id!,
+                     name: subCategory.name,
                   })
                ),
+               newSubCategories: newSubCategories.map((subCategory) => ({
+                  name: subCategory.name,
+               })),
+               removedSubCategoryIds: removedSubCategoryIds,
             });
-
             if (res.status === 'success') {
                toast({
                   title: 'Category updated successfully',
                   description: 'The category has been updated successfully',
                });
-               router.push('/dashboard/inventory/categories');
+               router.refresh();
                setClose();
             }
          } catch (error) {
@@ -80,7 +117,7 @@ export default function EditCategoryForm({
    };
 
    return (
-      <div className='flex h-screen'>
+      <div className='flex items-center justify-center h-screen'>
          <div className='m-auto p-8 rounded-lg w-1/2'>
             <div className='flex justify-between items-center mb-8'>
                <Button variant={'ghost'} onClick={() => setClose()}>
@@ -88,10 +125,7 @@ export default function EditCategoryForm({
                </Button>
 
                <h1 className='text-xl font-semibold'>Edit Category</h1>
-               <Button
-                  onClick={handleSubmit(onSubmit)}
-                  className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded'
-               >
+               <Button onClick={handleSubmit(onSubmit)} className=' py-2 px-4 '>
                   {isPending ? (
                      <CircleDashedIcon size={20} className='animate-spin' />
                   ) : (
@@ -123,36 +157,28 @@ export default function EditCategoryForm({
                      >
                         Sub Categories
                      </Label>
-                     {subCategoriesSelected.map((subCategory, index) => (
-                        <div key={index} className='mb-2'>
+                     {subCategories.map((subCategory, index) => (
+                        <div
+                           key={index}
+                           className='mb-2 flex items-center gap-8'
+                        >
                            <Input
                               id={`sub-category-${index}`}
-                              defaultValue={subCategory.name}
-                              {...register(`subCategory[${index}]`)}
+                              value={subCategory.name}
+                              onChange={(e) =>
+                                 handleSubCategoryChange(index, e.target.value)
+                              }
                               placeholder='e.g Engine'
                               className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
+                           />
+                           <Trash2
+                              className='text-red-500 cursor-pointer'
+                              onClick={() => handleRemoveSubCategory(index)}
                            />
                         </div>
                      ))}
                   </div>
-                  {subCategories.map((subCategory, index) => (
-                     <div key={index} className='mb-2'>
-                        <Input
-                           id={`new-sub-category-${index}`}
-                           value={subCategory}
-                           onChange={(e) =>
-                              handleSubCategoryChange(index, e.target.value)
-                           }
-                           placeholder='New Subcategory'
-                           className='shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline'
-                        />
-                     </div>
-                  ))}
-                  <Button
-                     type='button'
-                     onClick={handleAddSubCategory}
-                     className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded '
-                  >
+                  <Button type='button' onClick={handleAddSubCategory}>
                      Add
                   </Button>
                </div>

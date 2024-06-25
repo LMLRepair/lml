@@ -12,6 +12,7 @@ import {
    LowStockAlert,
    Sale,
    Variation,
+   InventoryItemBrand,
    Vendor,
 } from './inventoryItems';
 
@@ -23,6 +24,8 @@ import {
    series,
    services,
 } from './serviceItems';
+
+import { BlogCategory, Post } from './blogsSeed';
 
 const prisma = new PrismaClient();
 
@@ -36,14 +39,12 @@ async function main() {
    await prisma.series.createMany({
       data: series,
    });
-
    await prisma.model.createMany({
       data: model,
    });
    await prisma.modelCategory.createMany({
       data: modelCategory,
    });
-
    await prisma.category.createMany({
       data: categories,
    });
@@ -61,7 +62,22 @@ async function main() {
       },
    });
 
-   // Todo: Insert new records
+   //Todo: Deleting whole the inventory
+   // await prisma.lowStockAlert.deleteMany({});
+   // await prisma.inventoryAge.deleteMany({});
+   // await prisma.sale.deleteMany({});
+   // await prisma.internalTransfer.deleteMany({});
+   // // Delete comments first
+   // await prisma.comment.deleteMany({});
+   // // Then delete item returns
+   // await prisma.itemReturn.deleteMany({});
+   // await prisma.variation.deleteMany({});
+   // await prisma.inventoryItem.deleteMany({});
+   // await prisma.location.deleteMany({});
+   // await prisma.vendor.deleteMany({});
+   // await prisma.itemsSubCategory.deleteMany({});
+   // await prisma.itemsCategory.deleteMany({});
+   // Todo: Inventory Seed
    await prisma.itemsCategory.createMany({
       data: ItemsCategory,
    });
@@ -73,6 +89,9 @@ async function main() {
    });
    await prisma.location.createMany({
       data: Location,
+   });
+   await prisma.inventoryItemBrand.createMany({
+      data: InventoryItemBrand,
    });
    await prisma.inventoryItem.createMany({
       data: InventoryItem,
@@ -98,6 +117,15 @@ async function main() {
    await prisma.lowStockAlert.createMany({
       data: LowStockAlert,
    });
+   //Todo:Blog seed
+   // await prisma.post.deleteMany({});
+   // await prisma.blogCategory.deleteMany({});
+   // await prisma.blogCategory.createMany({
+   //    data: BlogCategory,
+   // });
+   // await prisma.post.createMany({
+   //    data: Post,
+   // });
 }
 
 main()

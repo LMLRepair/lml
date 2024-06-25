@@ -50,6 +50,7 @@ type CreateCategoryInput = {
    name: string;
    subCategories?: { name: string }[];
    imageUrl?: string | null;
+   newSubCategories?: { name: string }[];
 };
 
 export const createCategory = async (
@@ -96,6 +97,8 @@ export const createCategory = async (
 type UpdateCategoryInput = {
    name: string;
    subCategories?: { itemsSubCategoryId: number; name: string }[];
+   newSubCategories?: { name: string }[];
+   removedSubCategoryIds?: number[];
 };
 
 type UpdateCategoryResponse = {
@@ -107,6 +110,7 @@ export const updateCategory = async (
    data: UpdateCategoryInput
 ): Promise<UpdateCategoryResponse> => {
    try {
+      console.log(data);
       const existingCategory = await prisma.itemsCategory.findUnique({
          where: {
             itemsCategoryId: Number(categoryId),
@@ -146,6 +150,35 @@ export const updateCategory = async (
          });
 
          await Promise.all(subCategoryPromises);
+      }
+
+      if (data.newSubCategories && data.newSubCategories.length > 0) {
+         const newSubCategoriesPromises = data.newSubCategories.map(
+            (newSubCategory) => {
+               if (newSubCategory.name) {
+                  return prisma.itemsSubCategory.create({
+                     data: {
+                        name: newSubCategory.name,
+                        categoryId: Number(categoryId),
+                     },
+                  });
+               }
+            }
+         );
+
+         await Promise.all(newSubCategoriesPromises);
+      }
+
+      if (data.removedSubCategoryIds && data.removedSubCategoryIds.length > 0) {
+         const removeSubCategoryPromises = data.removedSubCategoryIds.map(
+            (id) => {
+               return prisma.itemsSubCategory.delete({
+                  where: { itemsSubCategoryId: id },
+               });
+            }
+         );
+
+         await Promise.all(removeSubCategoryPromises);
       }
 
       return { status: 'success' };

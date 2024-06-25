@@ -1,8 +1,12 @@
 'use client';
 
+import { Brand } from '@prisma/client';
 import { Search } from 'lucide-react';
-import Image from 'next/image';
+import Link from 'next/link';
+import { useState } from 'react';
+import AddBrand from './AddBrand';
 import CustomContainer from './CustomContainer';
+import EditBrand from './EditBrand';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
 import {
@@ -13,11 +17,6 @@ import {
    TableHeader,
    TableRow,
 } from './ui/table';
-import Link from 'next/link';
-import { useState } from 'react';
-import { Brand } from '@prisma/client';
-import AddBrand from './AddBrand';
-import EditBrand from './EditBrand';
 
 interface BrandsTableProps {
    brands: Brand[];

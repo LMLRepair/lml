@@ -6,8 +6,8 @@ import { useState } from 'react';
 import { EditItemDialog } from './EditItemDialog';
 import { Card } from './ui/card';
 
-import { Variation, Vendor } from '@prisma/client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { AddItemDialog } from './AddItem';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
@@ -26,28 +26,12 @@ import {
    TooltipTrigger,
 } from './ui/tooltip';
 
-interface InventoryItem {
-   inventoryItemId: number;
-   image: string;
-   name: string;
-   description: string | null;
-   brand: string;
-   itemsCategoryId: number | null;
-   itemsSubCategoryId: number | null;
-   vendorId: number | null;
-   variations: Variation[];
-   locationId: number | null;
-   itemsCategory?: { name: string };
-   itemsSubCategory?: { name: string };
-   location?: { name: string };
-   vendor: Vendor;
-}
-
 interface Props {
    items: any;
 }
 
 function ItemsTable({ items }: Props) {
+   const router = useRouter();
    const [search, setSearch] = useState('');
 
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +45,7 @@ function ItemsTable({ items }: Props) {
          item.name.toLowerCase().includes(search.toLocaleLowerCase())
       );
    });
+
    return (
       <div>
          <div className='space-y-3 '>
@@ -69,7 +54,12 @@ function ItemsTable({ items }: Props) {
                   <h1 className='text-2xl font-medium'>Inventory Items</h1>
                   <p className='text-sm'>Manage your inventory items</p>
                </div>
-               <AddItemDialog />
+               <div className='flex items-center gap-3'>
+                  <AddItemDialog />
+                  <Button type='button' onClick={() => router.back()}>
+                     Go Back
+                  </Button>
+               </div>
             </div>
             <div className='flex items-center justify-between space-x-3'>
                <Input
@@ -143,7 +133,9 @@ function ItemsTable({ items }: Props) {
                                     .reduce((a: any, b: any) => a + b, 0)}
                               </TableCell>
 
-                              <TableCell>{item.brand}</TableCell>
+                              <TableCell>
+                                 {item.brand.brandInventoryName}
+                              </TableCell>
                               <TableCell>{item.vendor.name}</TableCell>
                               <TableCell>
                                  {item.variations &&

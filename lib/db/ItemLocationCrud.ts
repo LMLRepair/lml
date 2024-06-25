@@ -16,6 +16,7 @@ export const getLocations = async (): Promise<Location[]> => {
       throw new Error('Failed to fetch inventory locations');
    }
 };
+
 type CreateLocationResponse = {
    location: Location;
    status: string;

@@ -2,9 +2,11 @@
 
 import { Trash2 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { TransferItemDialog } from './AddTransferItem';
 import { EditTransferItemDialog } from './EditTransferItem';
+import { Button } from './ui/button';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
 import {
@@ -60,6 +62,7 @@ type InternalTransfersTableProps = {
 };
 
 function InternalTransfersTable({ transfers }: any) {
+   const router = useRouter();
    const [search, setSearch] = useState('');
 
    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -82,7 +85,12 @@ function InternalTransfersTable({ transfers }: any) {
                <h1 className='text-2xl font-medium'>Internal Transfers List</h1>
                <p className='text-sm'>Here all Internal transfers data</p>
             </div>
-            <TransferItemDialog />
+            <div className='flex items-center gap-5'>
+               <TransferItemDialog />
+               <Button type='button' onClick={() => router.back()}>
+                  Go Back
+               </Button>
+            </div>
          </div>
          <Input
             placeholder='Search Item Return...'

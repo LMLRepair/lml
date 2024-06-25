@@ -1,0 +1,78 @@
+export const BlogCategory = [
+   {
+      blogCategoryId: 1,
+      name: 'Technology',
+   },
+   {
+      blogCategoryId: 2,
+      name: 'Health',
+   },
+   {
+      blogCategoryId: 3,
+      name: 'Lifestyle',
+   },
+   {
+      blogCategoryId: 4,
+      name: 'Education',
+   },
+];
+
+export const Post = [
+   {
+      id: 1,
+      title: 'The Future of AI',
+      content: 'Content about the future of AI...',
+      authorId: 1,
+      blogCategoryId: 1,
+      tag: 'AI',
+      published: true,
+      createdAt: new Date('2023-01-01T00:00:00Z'),
+      updatedAt: new Date('2023-01-01T00:00:00Z'),
+      metaTitle: 'Future of AI',
+      metaDescription:
+         'An article discussing the future of artificial intelligence.',
+      publishedAt: new Date('2023-01-01T00:00:00Z'),
+   },
+   {
+      id: 2,
+      title: 'Healthy Eating Habits',
+      content: 'Content about healthy eating...',
+      authorId: 2,
+      blogCategoryId: 2,
+      tag: 'Nutrition',
+      published: false,
+      createdAt: new Date('2023-02-01T00:00:00Z'),
+      updatedAt: new Date('2023-02-01T00:00:00Z'),
+      metaTitle: 'Healthy Eating',
+      metaDescription: 'An article about maintaining healthy eating habits.',
+      publishedAt: null,
+   },
+   {
+      id: 3,
+      title: 'Minimalist Living',
+      content: 'Content about minimalist living...',
+      authorId: 2,
+      blogCategoryId: 3,
+      tag: 'Minimalism',
+      published: true,
+      createdAt: new Date('2023-03-01T00:00:00Z'),
+      updatedAt: new Date('2023-03-01T00:00:00Z'),
+      metaTitle: 'Minimalist Lifestyle',
+      metaDescription: 'An article about minimalist living.',
+      publishedAt: new Date('2023-03-01T00:00:00Z'),
+   },
+   {
+      id: 4,
+      title: 'Online Learning Tips',
+      content: 'Content about tips for online learning...',
+      authorId: 1,
+      blogCategoryId: 4,
+      tag: 'E-learning',
+      published: false,
+      createdAt: new Date('2023-04-01T00:00:00Z'),
+      updatedAt: new Date('2023-04-01T00:00:00Z'),
+      metaTitle: 'E-learning Tips',
+      metaDescription: 'An article providing tips for online learning.',
+      publishedAt: null,
+   },
+];
