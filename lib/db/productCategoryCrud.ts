@@ -45,3 +45,55 @@ export const updateProductCategory = async (
     throw new Error("Failed to update productCategoryId");
   }
 };
+
+export const deleteProductCategory = async (productCategoryId: number) => {
+  try {
+    const productCategory = await prisma.productCategories.findUnique({
+      where: {
+        product_category_id: productCategoryId,
+      },
+      include: {
+        ProductSubCategories: {
+          include: {
+            Products: true,
+          },
+        },
+      },
+    });
+
+    if (!productCategory) {
+      return null;
+    }
+
+    await prisma.$transaction([
+      ...productCategory.ProductSubCategories.flatMap((productSubCategory) =>
+        productSubCategory.Products.map((product) =>
+          prisma.products.delete({
+            where: {
+              product_id: product.product_id,
+            },
+          })
+        )
+      ),
+    ]);
+
+    await prisma.productSubCategories.deleteMany({
+      where: {
+        product_sub_category_id: productCategoryId,
+      },
+    });
+
+    await prisma.productCategories.delete({
+      where: {
+        product_category_id: productCategoryId,
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+};

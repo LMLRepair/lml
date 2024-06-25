@@ -1,6 +1,7 @@
 "use client";
 import AddModelCategory from "@/components/AddModelCategory";
 import CustomContainer from "@/components/CustomContainer";
+import DeleteModelCategory from "@/components/DeleteModelCategory";
 import EditModelCategory from "@/components/EditModelCategory";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -141,6 +142,12 @@ const ModelCategoryPage = ({ params, searchParams }: Props) => {
                         raw={modelCategory.raw.toString()}
                         timeFrame={modelCategory.timeFrame}
                         typeOfRepair={modelCategory.type_of_repair.toString()}
+                      />
+                    </TableCell>
+
+                    <TableCell>
+                      <DeleteModelCategory
+                        modelCategoryId={modelCategory.modelCategory_id}
                       />
                     </TableCell>
                   </TableRow>

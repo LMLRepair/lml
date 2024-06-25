@@ -57,3 +57,18 @@ export const updateStaff = async (
     throw new Error("Failed to update staff");
   }
 };
+
+export const deleteStaff = async (staffId: number) => {
+  try {
+    await prisma.staff.delete({
+      where: {
+        staff_id: staffId,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+};

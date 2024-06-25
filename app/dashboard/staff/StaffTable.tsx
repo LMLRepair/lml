@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import AddStaff from "./AddStaff";
 import EditStaff from "./EditStaff";
+import DeleteStaff from "./DeleteStaff";
 
 interface StaffTableProps {
   staff: Staff[];
@@ -49,6 +50,7 @@ function StaffTable({ staff }: StaffTableProps) {
               onChange={handleInputChange}
             />
           </div>
+
           <AddStaff />
         </div>
       </Card>
@@ -80,6 +82,9 @@ function StaffTable({ staff }: StaffTableProps) {
                   location={staff.location}
                   role={staff.role}
                 />
+              </TableCell>
+              <TableCell>
+                <DeleteStaff staffId={staff.staff_id} />
               </TableCell>
             </TableRow>
           ))}

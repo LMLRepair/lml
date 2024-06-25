@@ -49,3 +49,34 @@ export const updateModel = async (
     throw new Error("Failed to update model");
   }
 };
+
+export const deleteModel = async (modelId: number) => {
+  try {
+    const model = await prisma.model.findUnique({
+      where: {
+        model_id: modelId,
+      },
+    });
+
+    if (!model) {
+      return null;
+    }
+
+    await prisma.modelCategory.deleteMany({
+      where: {
+        model_id: model.model_id,
+      },
+    });
+
+    await prisma.model.delete({
+      where: {
+        model_id: modelId,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+};

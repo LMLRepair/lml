@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import EditSeries from "./EditSeries";
 import AddSeries from "./AddSeries";
+import DeleteSeries from "./DeleteSeries";
 
 type Series = {
   series_id: number;
@@ -102,6 +103,10 @@ function seriesTable({ series, brandId }: seriesTableProps) {
                   seriesName={series.series_name}
                   seriesDescription={series.series_desc}
                 />
+              </TableCell>
+
+              <TableCell>
+                <DeleteSeries seriesId={series.series_id} />
               </TableCell>
             </TableRow>
           ))}

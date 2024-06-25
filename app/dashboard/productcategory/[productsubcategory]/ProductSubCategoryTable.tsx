@@ -18,6 +18,7 @@ import {
 import { ProductSubCategories } from "@prisma/client";
 import AddProductSubCategory from "@/components/AddProductSubCategory";
 import EditProductSubCategory from "@/components/EditProductSubCategory";
+import DeleteProductSubCategory from "@/components/DeleteProductSubCategory";
 
 interface ProductSubCategoryTableProps {
   productSubCategories: ProductSubCategories[];
@@ -107,6 +108,13 @@ function ProductSubCategoryTable({
                   }
                   productSubCategoryDescription={
                     filteredProductSubCategory.product_sub_category_desc
+                  }
+                />
+              </TableCell>
+              <TableCell>
+                <DeleteProductSubCategory
+                  productSubCategoryId={
+                    filteredProductSubCategory.product_sub_category_id
                   }
                 />
               </TableCell>

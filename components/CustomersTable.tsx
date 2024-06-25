@@ -17,6 +17,8 @@ import { useState } from "react";
 import { Customer } from "@prisma/client";
 import EditCustomer from "./EditCustomer";
 import AddCustomer from "./AddCustomer";
+import UploadCustomers from "./UploadCustomers";
+import DeleteCustomer from "./DeleteCustomer";
 
 interface CustomersTableProps {
   customers: Customer[];
@@ -49,6 +51,7 @@ function CustomersTable({ customers }: CustomersTableProps) {
             />
           </div>
           <AddCustomer />
+          <UploadCustomers />
         </div>
       </Card>
       <Table>
@@ -78,6 +81,9 @@ function CustomersTable({ customers }: CustomersTableProps) {
                   customerPhone={customer.customer_phone}
                   customerAddress={customer.customer_address}
                 />
+              </TableCell>
+              <TableCell>
+                <DeleteCustomer customerId={customer.customer_id} />
               </TableCell>
             </TableRow>
           ))}

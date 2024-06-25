@@ -18,6 +18,7 @@ import {
 import { ProductCategories } from "@prisma/client";
 import AddProductCategory from "@/components/AddProductCategory";
 import EditProductCategory from "@/components/EditProductCategory";
+import DeleteProductCategory from "@/components/DeleteProductCategory";
 
 interface ProductCategoryTableProps {
   productCategories: ProductCategories[];
@@ -100,6 +101,13 @@ function ProductCategoryTable({
                   }
                   productCategoryDescription={
                     filteredProductCategory.product_category_desc
+                  }
+                />
+              </TableCell>
+              <TableCell>
+                <DeleteProductCategory
+                  productCategoryId={
+                    filteredProductCategory.product_category_id
                   }
                 />
               </TableCell>

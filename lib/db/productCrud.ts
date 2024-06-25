@@ -54,3 +54,18 @@ export const updateProduct = async (
     throw new Error("Failed to update product");
   }
 };
+
+export const deleteProduct = async (productId: number) => {
+  try {
+    await prisma.products.delete({
+      where: {
+        product_id: productId,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+};

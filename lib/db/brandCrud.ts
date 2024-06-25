@@ -40,3 +40,72 @@ export const updateBrand = async (
     throw new Error("Failed to update brand");
   }
 };
+
+export const deleteBrand = async (brandId: number) => {
+  try {
+    const brand = await prisma.brand.findUnique({
+      where: {
+        brand_id: brandId,
+      },
+      include: {
+        Series: {
+          include: {
+            Model: {
+              include: {
+                ModelCategory: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!brand) {
+      return null;
+    }
+
+    // Use transaction for batch operations
+    await prisma.$transaction([
+      // Batch delete all ModelCategory entries
+      ...brand.Series.flatMap((series) =>
+        series.Model.flatMap((model) =>
+          model.ModelCategory.map((modelCategory) =>
+            prisma.modelCategory.delete({
+              where: {
+                modelCategory_id: modelCategory.modelCategory_id,
+              },
+            })
+          )
+        )
+      ),
+
+      // Delete all models associated with each series
+      ...brand.Series.flatMap((series) =>
+        prisma.model.deleteMany({
+          where: {
+            series_id: series.series_id,
+          },
+        })
+      ),
+    ]);
+
+    await prisma.series.deleteMany({
+      where: {
+        brand_id: brandId,
+      },
+    });
+
+    await prisma.brand.delete({
+      where: {
+        brand_id: brandId,
+      },
+    });
+
+    return true; // Or some indication of success
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+};

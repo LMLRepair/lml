@@ -9,15 +9,15 @@ datasource db {
 }
 
 model Customer {
-  customer_id    Int                  @id @default(autoincrement())
-  customer_name  String
-  customer_email  String
-  customer_phone String @unique
+  customer_id      Int    @id @default(autoincrement())
+  customer_name    String
+  customer_email   String
+  customer_phone   String @unique
   customer_address String
 }
 
 model Service {
-  service_id    Int    @id @default(autoincrement())
+  service_id    Int        @id @default(autoincrement())
   service_name  String
   service_desc  String
   service_image String
@@ -26,7 +26,7 @@ model Service {
 }
 
 model Category {
-  category_id    Int    @id @default(autoincrement())
+  category_id    Int     @id @default(autoincrement())
   type_Of_Repair String
   raw            Float
   tax            Float
@@ -40,7 +40,7 @@ model Category {
 }
 
 model Brand {
-  brand_id    Int    @id @default(autoincrement())
+  brand_id    Int      @id @default(autoincrement())
   brand_name  String
   brand_image String
   brand_desc  String
@@ -48,21 +48,22 @@ model Brand {
 }
 
 model Products {
-  product_id               Int                  @id @default(autoincrement())
-  product_name        String
-  product_image       String
-  product_desc        String
-  raw                 Float
-  tax                 Float
-  shipping            Float
-  markup              Float
-  product_sub_category_id  Int
-  ProductSubCategories     ProductSubCategories @relation(fields: [product_sub_category_id], references: [product_sub_category_id])
+  product_id              Int                  @id @default(autoincrement())
+  product_name            String
+  product_image           String
+  product_desc            String
+  raw                     Float
+  tax                     Float
+  shipping                Float
+  markup                  Float
+  product_sub_category_id Int
+  ProductSubCategories    ProductSubCategories @relation(fields: [product_sub_category_id], references: [product_sub_category_id])
 
   @@index([product_sub_category_id], map: "idx_product_sub_category_id")
 }
+
 model Series {
-  series_id    Int    @id @default(autoincrement())
+  series_id    Int     @id @default(autoincrement())
   series_name  String
   series_image String
   series_desc  String
@@ -116,8 +117,8 @@ model InventoryItem {
   itemsSubCategoryId Int?
   vendorId           Int?
   locationId         Int?
-  brand              String
   image              String
+  brandId            Int
   internalTransfers  InternalTransfer[]
   inventoryAge       InventoryAge[]
   itemsCategory      ItemsCategory      @relation(fields: [itemsCategoryId], references: [itemsCategoryId])
@@ -133,12 +134,13 @@ model InventoryItem {
   @@index([itemsSubCategoryId], map: "InventoryItem_itemsSubCategoryId_fkey")
   @@index([locationId], map: "InventoryItem_locationId_fkey")
   @@index([vendorId], map: "InventoryItem_vendorId_fkey")
+  @@index([brandId], map: "InventoryItemBrand_brandId_fkey")
 }
 
 model ItemsCategory {
   itemsCategoryId Int                @id @default(autoincrement())
   name            String
-  image           String  
+  image           String
   InventoryItem   InventoryItem[]
   subCategories   ItemsSubCategory[]
 }
@@ -234,7 +236,7 @@ model LowStockAlert {
 }
 
 model ProductCategories {
-  product_category_id    Int                  @id @default(autoincrement())
+  product_category_id    Int                    @id @default(autoincrement())
   product_category_name  String
   product_category_desc  String
   product_category_image String
@@ -242,17 +244,16 @@ model ProductCategories {
 }
 
 model ProductSubCategories {
-  product_sub_category_id    Int                  @id @default(autoincrement())
+  product_sub_category_id    Int               @id @default(autoincrement())
   product_sub_category_name  String
   product_sub_category_desc  String
   product_sub_category_image String
   product_category_id        Int
-  ProductCategories          ProductCategories    @relation(fields: [product_category_id], references: [product_category_id])
+  ProductCategories          ProductCategories @relation(fields: [product_category_id], references: [product_category_id])
   Products                   Products[]
-  
+
   @@index([product_category_id], map: "idx_product_category_id")
 }
-
 
 model ItemReturn {
   stockReturnId   Int           @id @default(autoincrement())
@@ -283,4 +284,32 @@ model Comment {
   stockReturn   ItemReturn @relation(fields: [stockReturnId], references: [stockReturnId])
 
   @@index([stockReturnId], map: "Comment_stockReturnId_fkey")
+}
+
+model BlogCategory {
+  blogCategoryId Int    @id @default(autoincrement())
+  name           String @unique
+}
+
+model InventoryItemBrand {
+  brandInventoryId   Int    @id @default(autoincrement())
+  brandInventoryName String
+  description        String
+}
+
+model Post {
+  id              Int       @id @default(autoincrement())
+  title           String
+  content         String
+  authorId        Int
+  blogCategoryId  Int
+  tag             String
+  published       Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime
+  metaTitle       String?
+  metaDescription String?
+  publishedAt     DateTime?
+
+  @@index([blogCategoryId], map: "Posts_blogCategoryId_fkey")
 }

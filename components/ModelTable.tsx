@@ -16,6 +16,7 @@ import {
 import { useState } from "react";
 import AddModel from "./AddModel";
 import EditModel from "./EditModel";
+import DeleteModel from "./DeleteModel";
 
 type Model = {
   model_id: number;
@@ -102,6 +103,10 @@ function ModalTable({ models, seriesId, brandId }: ModalTableProps) {
                   modelName={model.model_name}
                   brandId={brandId}
                 />
+              </TableCell>
+
+              <TableCell>
+                <DeleteModel modelId={model.model_id} />
               </TableCell>
             </TableRow>
           ))}

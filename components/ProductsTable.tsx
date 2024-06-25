@@ -16,6 +16,7 @@ import { useState } from "react";
 import { Products } from "@prisma/client";
 import AddProduct from "./AddProduct";
 import EditProduct from "./EditProduct";
+import DeleteProduct from "./DeleteProduct";
 
 interface ProductsTableProps {
   products: Products[];
@@ -116,6 +117,9 @@ function ProductsTable({ products, productSubCategoryId }: ProductsTableProps) {
                   raw={product.raw.toString()}
                   markup={product.markup.toString()}
                 />
+              </TableCell>
+              <TableCell>
+                <DeleteProduct productId={product.product_id} />
               </TableCell>
             </TableRow>
           ))}

@@ -50,3 +50,55 @@ export const updateSeries = async (
     throw new Error("Failed to update series");
   }
 };
+
+export const deleteSeries = async (seriesId: number) => {
+  try {
+    const series = await prisma.series.findUnique({
+      where: {
+        series_id: seriesId,
+      },
+      include: {
+        Model: {
+          include: {
+            ModelCategory: true,
+          },
+        },
+      },
+    });
+
+    if (!series) {
+      return null;
+    }
+
+    await prisma.$transaction([
+      ...series.Model.flatMap((model) =>
+        model.ModelCategory.map((modelCategory) =>
+          prisma.modelCategory.delete({
+            where: {
+              modelCategory_id: modelCategory.modelCategory_id,
+            },
+          })
+        )
+      ),
+    ]);
+
+    await prisma.model.deleteMany({
+      where: {
+        series_id: seriesId,
+      },
+    });
+
+    await prisma.series.delete({
+      where: {
+        series_id: seriesId,
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+};

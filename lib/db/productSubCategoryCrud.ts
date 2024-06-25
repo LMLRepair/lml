@@ -51,3 +51,36 @@ export const updateProductSubCategory = async (
     throw new Error("Failed to update productSubCategoryId");
   }
 };
+
+export const deleteProductSubCategory = async (
+  productSubCategoryId: number
+) => {
+  try {
+    const productSubCategory = await prisma.productSubCategories.findUnique({
+      where: {
+        product_sub_category_id: productSubCategoryId,
+      },
+    });
+
+    if (!productSubCategory) {
+      return null;
+    }
+
+    await prisma.products.deleteMany({
+      where: {
+        product_sub_category_id: productSubCategoryId,
+      },
+    });
+
+    await prisma.productSubCategories.delete({
+      where: {
+        product_sub_category_id: productSubCategoryId,
+      },
+    });
+  } catch (error) {
+    console.error(error);
+    return null;
+  } finally {
+    await prisma.$disconnect();
+  }
+};
