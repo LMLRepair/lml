@@ -2,16 +2,26 @@
 
 import { Dialog, DialogContent, DialogTrigger } from '@/components/TopDialog';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { generateSKU } from '@/lib/skuGenerator';
 import { useState } from 'react';
-import { generateSKU } from '@/lib/skuGenerator'; // Adjust the import path as needed
+import { Checkbox } from './ui/checkbox';
+
+type Location = {
+   id: string;
+   name: string;
+   description: string;
+   stock: string; // Each location should have its own quantity field
+};
 
 type Variation = {
    name: string;
    price: string;
    sku: string;
-   quantity: string;
+   quantity: string; // Total quantity for all selected locations
    image?: File | null;
 };
 
@@ -23,10 +33,16 @@ type ErrorVariation = {
 
 type VariationsDialogProps = {
    getVariations: (options: Variation[]) => void;
+   selectedLocations: Location[]; // Update to specify Location type
 };
 
-const VariationsDialog = ({ getVariations }: VariationsDialogProps) => {
+const VariationsDialog = ({
+   getVariations,
+   selectedLocations,
+}: VariationsDialogProps) => {
    const [open, setOpen] = useState(false);
+   const [isNext, setIsNext] = useState(false);
+   const [isBack, setIsBack] = useState(true);
    const [variation, setVariation] = useState<Variation>({
       name: '',
       price: '',
@@ -34,21 +50,59 @@ const VariationsDialog = ({ getVariations }: VariationsDialogProps) => {
       quantity: '',
       image: null,
    });
-   const [errors, setErrors] = useState<ErrorVariation>({});
 
-   const handleChange = (key: string, value: string | number) => {
+   const [errors, setErrors] = useState<ErrorVariation>({});
+   const [locations, setLocations] = useState<Location[]>([]);
+   const [variationsItemData, setVariationsItemData] = useState<{
+      image?: File | null;
+      name: string;
+      price: string;
+      stock: number;
+      locations: Location[];
+   }>({
+      name: '',
+      price: '',
+      stock: 0,
+      locations: [],
+   });
+
+   const handleChange = (key: string, value: any) => {
       try {
-         let updatedVariation = { ...variation, [key]: value };
+         let updatedVariation = { ...variation };
          if (key === 'name') {
-            updatedVariation = {
-               ...updatedVariation,
-               sku: generateSKU(value as string),
-            };
+            updatedVariation.sku = generateSKU(value as string);
          }
+         updatedVariation[key] = value;
+
          setVariation(updatedVariation);
       } catch (error) {
-         // Ignore the error
          console.error(`Error updating ${key}:`, error);
+      }
+   };
+
+   const handleLocationData = (index: number, stock: string) => {
+      setIsBack(false);
+      const updatedLocations = [...locations];
+      updatedLocations[index].stock = stock;
+      setLocations(updatedLocations);
+
+      if (!variation.name || !variation.price) {
+         console.error('Please fill in name and price before managing stock.');
+         return;
+      }
+      if (locations && locations.length > 0) {
+         const totalStock = locations.reduce(
+            (acc, curr) => acc + parseInt(curr.stock),
+            0
+         );
+
+         setVariationsItemData({
+            image: variation.image,
+            name: variation.name,
+            price: variation.price,
+            stock: totalStock,
+            locations: [...locations],
+         });
       }
    };
 
@@ -58,24 +112,35 @@ const VariationsDialog = ({ getVariations }: VariationsDialogProps) => {
             setVariation({ ...variation, image: e.target.files[0] });
          }
       } catch (error) {
-         // Ignore the error
          console.error('Error updating image:', error);
       }
    };
 
    const handleSubmit = () => {
-      if (!variation.name || !variation.price || !variation.quantity) {
+      if (!variation.name || !variation.price) {
          setErrors({
             name: !variation.name ? 'Please enter a name' : '',
             price: !variation.price ? 'Please enter a price' : '',
-            quantity: !variation.quantity ? 'Please enter a quantity' : '',
          });
+         setIsNext(false);
          return;
       }
+      setIsNext(true);
+   };
 
-      getVariations([variation]);
+   const handleManageStock = () => {
+      console.log('Variations Item Data:', variationsItemData);
+      setLocations([]);
+      setVariation({
+         name: '',
+         price: '',
+         sku: '',
+         quantity: '',
+         image: null,
+      });
       setOpen(false);
-      setVariation({ name: '', price: '', sku: '', quantity: '', image: null });
+      setIsNext(false);
+      setErrors({});
    };
 
    return (
@@ -86,73 +151,176 @@ const VariationsDialog = ({ getVariations }: VariationsDialogProps) => {
             </Button>
          </DialogTrigger>
          <DialogContent>
-            <form className='space-y-6'>
-               <h1 className='text-xl font-bold text-center'>
-                  Create Variation
-               </h1>
-               <div className='space-y-4'>
-                  <div>
-                     <Label className='mb-3'>
-                        Variation Name{' '}
-                        <span className='text-red-600 font-extrabold'>*</span>
-                     </Label>
-                     <Input
-                        placeholder='e.g. Color'
-                        value={variation.name}
-                        onChange={(e) => handleChange('name', e.target.value)}
-                     />
-                     <p className='text-red-600'>{errors.name}</p>
-                  </div>
+            <Tabs defaultValue='details'>
+               <TabsList className='grid w-full grid-cols-2 border border-primary'>
+                  <TabsTrigger value='details' disabled={!isBack}>
+                     Details
+                  </TabsTrigger>
+                  <TabsTrigger
+                     value='manage'
+                     className={
+                        isNext
+                           ? `text-green-500 font-bold animate-pulse`
+                           : 'animate-none'
+                     }
+                     disabled={!isNext}
+                  >
+                     Manage stock
+                  </TabsTrigger>
+               </TabsList>
+               <TabsContent value='details'>
+                  <Card className='border border-primary'>
+                     <form className='space-y-4 flex flex-col justify-center mt-10 px-8 py-6'>
+                        <h1 className='text-xl font-bold text-center'>
+                           Create Variation
+                        </h1>
+                        <div className='space-y-4'>
+                           <div>
+                              <Label className='mb-3'>
+                                 Variation Name{' '}
+                                 <span className='text-red-600 font-extrabold'>
+                                    *
+                                 </span>
+                              </Label>
+                              <Input
+                                 placeholder='e.g. Color'
+                                 value={variation.name}
+                                 onChange={(e) =>
+                                    handleChange('name', e.target.value)
+                                 }
+                                 className='border-2 border-yellow-600'
+                              />
+                              <p className='text-red-600'>{errors.name}</p>
+                           </div>
 
-                  <div>
-                     <Label className='mb-3'>
-                        Price{' '}
-                        <span className='text-red-600 font-extrabold'>*</span>
-                     </Label>
-                     <Input
-                        placeholder='e.g. 10.00'
-                        value={variation.price}
-                        onChange={(e) =>
-                           handleChange(
-                              'price',
-                              e.target.value === '' ? '' : e.target.value
-                           )
-                        }
-                     />
-                     <p className='text-red-600'>{errors.price}</p>
-                  </div>
-                  {/* <div>
-                     <Label className='mb-3'>SKU </Label>
-                     <Input
-                        placeholder='e.g. 12345-CLR-RED'
-                        value={variation.sku}
-                        onChange={(e) => handleChange('sku', e.target.value)}
-                        disabled // Disable SKU input field
-                     />
-                  </div> */}
-                  <div>
-                     <Label className='mb-3'>
-                        Quantity{' '}
-                        <span className='text-red-600 font-extrabold'>*</span>
-                     </Label>
-                     <Input
-                        placeholder='e.g. 10'
-                        value={variation.quantity}
-                        onChange={(e) =>
-                           handleChange(
-                              'quantity',
-                              e.target.value === '' ? '' : e.target.value
-                           )
-                        }
-                     />
-                     <p className='text-red-600'>{errors.quantity}</p>
-                  </div>
-                  <VariationImageField handleImageChange={handleImageChange} />
-               </div>
-               <Button type='button' onClick={handleSubmit}>
-                  Create Variation
-               </Button>
-            </form>
+                           <div>
+                              <Label className='mb-3'>
+                                 Price{' '}
+                                 <span className='text-red-600 font-extrabold'>
+                                    *
+                                 </span>
+                              </Label>
+                              <Input
+                                 placeholder='e.g. 10.00'
+                                 value={variation.price}
+                                 onChange={(e) =>
+                                    handleChange(
+                                       'price',
+                                       e.target.value === ''
+                                          ? ''
+                                          : e.target.value
+                                    )
+                                 }
+                                 className='border-2 border-yellow-600'
+                              />
+                              <p className='text-red-600'>{errors.price}</p>
+                           </div>
+                           {/* <div>
+                              <Label className='mb-3'>
+                                 Quantity{' '}
+                                 <span className='text-red-600 font-extrabold'>
+                                    *
+                                 </span>
+                              </Label>
+                              <Input
+                                 placeholder='e.g. 10'
+                                 value={variation.quantity}
+                                 onChange={(e) =>
+                                    handleChange(
+                                       'quantity',
+                                       e.target.value === ''
+                                          ? ''
+                                          : e.target.value
+                                    )
+                                 }
+                                 className='border-2 border-yellow-600'
+                              />
+                              <p className='text-red-600'>{errors.quantity}</p>
+                           </div> */}
+                           <VariationImageField
+                              handleImageChange={handleImageChange}
+                           />
+                        </div>
+                        <Button type='button' onClick={handleSubmit}>
+                           Create Variation
+                        </Button>
+                     </form>
+                  </Card>
+               </TabsContent>
+
+               <TabsContent value='manage'>
+                  <form className='h-96 2xl:h-full overflow-y-auto space-y-8 '>
+                     {selectedLocations && selectedLocations.length > 0 ? (
+                        selectedLocations.map((location, index) => (
+                           <Card
+                              key={location.id}
+                              className='w-full max-w-lg border border-primary mt-6'
+                           >
+                              <CardContent className='mt-6'>
+                                 <div className='flex flex-col justify-center mt-10'>
+                                    <div className='flex items-center space-x-2'>
+                                       <Checkbox
+                                          onCheckedChange={() =>
+                                             setLocations([
+                                                ...locations,
+                                                {
+                                                   ...location,
+                                                   stock: '',
+                                                },
+                                             ])
+                                          }
+                                       />
+                                       <Label className='text-sm font-medium leading-none'>
+                                          Available at{' '}
+                                          <span className='font-semibold'>
+                                             {location.name}
+                                          </span>
+                                       </Label>
+                                    </div>
+
+                                    <div className='grid grid-cols-3 items-center gap-4 mt-6'>
+                                       <Label
+                                          htmlFor='stock-on-hand'
+                                          className='col-span-1 text-sm font-medium leading-none '
+                                       >
+                                          Stock on hand
+                                       </Label>
+                                       <Input
+                                          id='stock-on-hand'
+                                          placeholder='7'
+                                          className='border-2 border-yellow-600 col-span-2'
+                                          value={location.stock}
+                                          onChange={(e) =>
+                                             handleLocationData(
+                                                index,
+                                                e.target.value
+                                             )
+                                          }
+                                       />
+                                    </div>
+                                 </div>
+                              </CardContent>
+                           </Card>
+                        ))
+                     ) : (
+                        <p className='text-center mt-6 flex flex-col gap-2'>
+                           <span>No Locations Available</span>{' '}
+                           <span className='text-sm'>
+                              Select a location to assign variations
+                           </span>{' '}
+                        </p>
+                     )}
+
+                     <Button
+                        className='w-full'
+                        type='button'
+                        onClick={handleManageStock}
+                     >
+                        Done
+                     </Button>
+                  </form>
+               </TabsContent>
+            </Tabs>
          </DialogContent>
       </Dialog>
    );

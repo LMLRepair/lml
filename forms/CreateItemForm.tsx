@@ -3,6 +3,8 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
+
 import {
    Select,
    SelectContent,
@@ -35,6 +37,7 @@ import { useToast } from '../components/ui/use-toast';
 import VariationsDialog from '../components/VariatinosDialog';
 import VariationTable from '../components/VariationsTable';
 import Image from 'next/image';
+import LocationSelectableDialog from '@/components/LocationSelectableDialog';
 
 type Inputs = {
    item: string;
@@ -42,7 +45,7 @@ type Inputs = {
    vendor: string;
    category: string;
    subCategory: string;
-   location: string;
+   location: string[];
    brand: string;
    image?: File | null | string;
 };
@@ -62,6 +65,8 @@ type Variation = {
    quantity: string;
    image?: File | null | string;
 };
+
+export type SelectedLocationsType = { id: string; name: string }[];
 
 function CreateNewItemForm({
    categories,
@@ -84,6 +89,12 @@ function CreateNewItemForm({
    const [image, setImage] = useState<File | null | string>(null);
    const [preview, setPreview] = useState<any>(null);
    const [variationsData, setVariationsData] = useState<Variation[]>([]);
+   const [selectedLocations, setSelectedLocations] =
+      useState<SelectedLocationsType>([]);
+
+   const handleSelectedLocations = (checkedLocations: any) => {
+      setSelectedLocations(checkedLocations);
+   };
 
    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
@@ -116,82 +127,73 @@ function CreateNewItemForm({
    };
 
    const onSubmit: SubmitHandler<Inputs> = (data) => {
-      let imageUrl: string | null = null;
-      let variationImages: string[] = [];
-
-      startTransition(async () => {
-         try {
-            if (image && image instanceof File) {
-               const response = await fetch(
-                  `/api/upload?filename=${image.name}`,
-                  {
-                     method: 'POST',
-                     body: image,
-                  }
-               );
-
-               if (!response.ok) {
-                  throw new Error('Failed to upload file.');
-               }
-
-               const newBlob = (await response.json()) as PutBlobResult;
-               imageUrl = newBlob.url;
-            }
-
-            if (variationsData.length > 0) {
-               for (const variation of variationsData) {
-                  if (variation.image && variation.image instanceof File) {
-                     const response = await fetch(
-                        `/api/upload?filename=${variation.image.name}`,
-                        {
-                           method: 'POST',
-                           body: variation.image,
-                        }
-                     );
-
-                     if (!response.ok) {
-                        throw new Error('Failed to upload file.');
-                     }
-
-                     const newBlob = (await response.json()) as PutBlobResult;
-                     variationImages.push(newBlob.url);
-                  }
-               }
-            }
-
-            const res = await createInventoryItem({
-               name: data.item,
-               description: data.description,
-               variations: variationsData.map((variation, index) => ({
-                  name: variation.name,
-                  price: variation.price,
-                  sku: variation.sku,
-                  quantity: variation.quantity,
-                  image: variationImages[index],
-               })),
-               brand: data.brand,
-               vendor: data.vendor,
-               category: data.category,
-               subCategory: data.subCategory,
-               location: data.location,
-               image: imageUrl,
-            });
-
-            if (res.status === 'success') {
-               toast({
-                  title: 'Item created',
-                  description: 'Item has been created successfully',
-               });
-               router.push('/dashboard/inventory/items');
-               setClose();
-            }
-         } catch (error) {
-            console.log(error);
-         }
-      });
+      // let imageUrl: string | null = null;
+      // let variationImages: string[] = [];
+      // startTransition(async () => {
+      //    try {
+      //       if (image && image instanceof File) {
+      //          const response = await fetch(
+      //             `/api/upload?filename=${image.name}`,
+      //             {
+      //                method: 'POST',
+      //                body: image,
+      //             }
+      //          );
+      //          if (!response.ok) {
+      //             throw new Error('Failed to upload file.');
+      //          }
+      //          const newBlob = (await response.json()) as PutBlobResult;
+      //          imageUrl = newBlob.url;
+      //       }
+      //       if (variationsData.length > 0) {
+      //          for (const variation of variationsData) {
+      //             if (variation.image && variation.image instanceof File) {
+      //                const response = await fetch(
+      //                   `/api/upload?filename=${variation.image.name}`,
+      //                   {
+      //                      method: 'POST',
+      //                      body: variation.image,
+      //                   }
+      //                );
+      //                if (!response.ok) {
+      //                   throw new Error('Failed to upload file.');
+      //                }
+      //                const newBlob = (await response.json()) as PutBlobResult;
+      //                variationImages.push(newBlob.url);
+      //             }
+      //          }
+      //       }
+      //       const res = await createInventoryItem({
+      //          name: data.item,
+      //          description: data.description,
+      //          variations: variationsData.map((variation, index) => ({
+      //             name: variation.name,
+      //             price: variation.price,
+      //             sku: variation.sku,
+      //             quantity: variation.quantity,
+      //             image: variationImages[index],
+      //          })),
+      //          brand: data.brand,
+      //          vendor: data.vendor,
+      //          category: data.category,
+      //          subCategory: data.subCategory,
+      //          location: data.location,
+      //          image: imageUrl,
+      //       });
+      //       if (res.status === 'success') {
+      //          toast({
+      //             title: 'Item created',
+      //             description: 'Item has been created successfully',
+      //          });
+      //          router.push('/dashboard/inventory/items');
+      //          setClose();
+      //       }
+      //    } catch (error) {
+      //       console.log(error);
+      //    }
+      // });
    };
 
-   console.log(brands);
    return (
       <div className='flex flex-col'>
          <div className='flex items-center justify-between p-6 bg-white '>
@@ -278,6 +280,10 @@ function CreateNewItemForm({
                      </Label>
                   </div>
                </div>
+               <LocationSelectableDialog
+                  handleSelectedLocations={handleSelectedLocations}
+                  locations={locations}
+               />
 
                <div className='flex flex-col justify-start'>
                   <div className='flex items-center justify-between'>
@@ -297,7 +303,10 @@ function CreateNewItemForm({
                               </TooltipContent>
                            </Tooltip>
                         </TooltipProvider>
-                        <VariationsDialog getVariations={handleOptionsData} />
+                        <VariationsDialog
+                           selectedLocations={selectedLocations}
+                           getVariations={handleOptionsData}
+                        />
                      </div>
                   </div>
                </div>
@@ -379,55 +388,7 @@ function CreateNewItemForm({
                      </span>
                   )}
                </div>
-               {/* <div className='w-1/3'>
-                  <Label className='block mb-1'>Raw Cost</Label>
-                  <Input
-                     type='number'
-                     step='0.01'
-                     placeholder='e.g 100.00'
-                     className='w-full'
-                     {...register('rawCost', { required: true })}
-                  />
-                  {errors.rawCost && (
-                     <span className='text-red-500'>
-                        This field is required
-                     </span>
-                  )}
-               </div>
-               <div className='flex justify-between'>
-                  <div className='w-1/3'>
-                     <Label className='block mb-1'>Tax Rate</Label>
-                     <Input
-                        type='number'
-                        step='0.01'
-                        placeholder='e.g 7.25'
-                        className='w-full'
-                        {...register('taxRate', { required: true })}
-                     />
-                     {errors.taxRate && (
-                        <span className='text-red-500'>
-                           This field is required
-                        </span>
-                     )}
-                  </div>
-                  <div className='w-1/3'>
-                     <Label className='block mb-1 text-right'>
-                        Shipping Cost
-                     </Label>
-                     <Input
-                        type='number'
-                        step='0.01'
-                        placeholder='e.g 5.00'
-                        className='w-full'
-                        {...register('shippingCost', { required: true })}
-                     />
-                     {errors.shippingCost && (
-                        <span className='text-red-500'>
-                           This field is required
-                        </span>
-                     )}
-                  </div>
-               </div> */}
+
                <div className='flex justify-between space-x-'>
                   <div className='w-1/2'>
                      <Label className='block mb-1'>Category</Label>
@@ -502,42 +463,7 @@ function CreateNewItemForm({
                      )}
                   </div>
                </div>
-               <div className='space-y-4'>
-                  <Label className='block mb-1'>Location</Label>
-                  <Controller
-                     name='location'
-                     control={control}
-                     defaultValue=''
-                     render={({ field }) => (
-                        <Select
-                           onValueChange={field.onChange}
-                           value={field.value}
-                        >
-                           <SelectTrigger>
-                              <SelectValue placeholder='Select a location' />
-                           </SelectTrigger>
-                           <SelectContent>
-                              {locations.map((location) => (
-                                 <SelectItem
-                                    key={location.locationId}
-                                    value={String(location.locationId)}
-                                 >
-                                    {location.name}
-                                 </SelectItem>
-                              ))}
-                           </SelectContent>
-                        </Select>
-                     )}
-                     rules={{ required: true }}
-                  />
-                  {errors.location && (
-                     <span className='text-red-500'>
-                        This field is required
-                     </span>
-                  )}
-               </div>
             </form>
-            {/* </div> */}
          </div>
       </div>
    );
