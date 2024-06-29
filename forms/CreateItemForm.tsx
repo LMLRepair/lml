@@ -3,6 +3,7 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 import LocationSelectableDialog from '@/components/LocationSelectableDialog';
 import {
@@ -19,6 +20,7 @@ import {
    TooltipProvider,
    TooltipTrigger,
 } from '@/components/ui/tooltip';
+import { createInventoryItem } from '@/lib/db/InventoryItemCrud';
 import { useModal } from '@/providers/model-provider';
 import {
    InventoryItemBrand,
@@ -27,12 +29,17 @@ import {
    Location,
    Vendor,
 } from '@prisma/client';
+import { PutBlobResult } from '@vercel/blob';
 import { CircleDashedIcon, ShieldQuestion, X } from 'lucide-react';
-import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useContext, useState, useTransition } from 'react';
+import { useState, useTransition } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useToast } from '../components/ui/use-toast';
+import VariationsDialog from '../components/AddVariation';
+import VariationTable from '../components/VariationsTable';
+import Image from 'next/image';
+import AddVariation from '../components/AddVariation';
+import SelectLocations from '@/components/SelectLocations';
 
 type Inputs = {
    item: string;
@@ -51,6 +58,14 @@ type CreateNewItemProps = {
    locations: Location[];
    brands: InventoryItemBrand[];
    vendors: Vendor[];
+};
+
+type Variation = {
+   name: string;
+   price: string;
+   sku: string;
+   quantity: string;
+   image?: File | null | string;
 };
 
 export type SelectedLocationsType = { id: string; name: string }[];
@@ -73,9 +88,15 @@ function CreateNewItemForm({
       control,
       formState: { errors },
    } = useForm<Inputs>();
-
    const [image, setImage] = useState<File | null | string>(null);
    const [preview, setPreview] = useState<any>(null);
+   const [variationsData, setVariationsData] = useState<Variation[]>([]);
+   const [selectedLocations, setSelectedLocations] =
+      useState<SelectedLocationsType>([]);
+
+   const handleSelectedLocations = (checkedLocations: any) => {
+      setSelectedLocations(checkedLocations);
+   };
 
    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
@@ -84,6 +105,27 @@ function CreateNewItemForm({
          const previewURL = URL.createObjectURL(e.target.files[0]);
          setPreview(previewURL);
       }
+   };
+
+   const handleOptionsData = (options: Variation[]) => {
+      setVariationsData((prevData) => [...prevData, ...options]);
+   };
+
+   const handleDeleteVariation = (deleteIndex: number) => {
+      const updatedVariations = variationsData.filter(
+         (_: Variation, index: number) => index !== deleteIndex
+      );
+      setVariationsData(updatedVariations);
+   };
+
+   const handleEditVariation = (
+      editIndex: number,
+      editedVariation: Variation
+   ) => {
+      const updatedVariations = variationsData.map((variation, index) =>
+         index === editIndex ? editedVariation : variation
+      );
+      setVariationsData(updatedVariations);
    };
 
    const onSubmit: SubmitHandler<Inputs> = (data) => {
@@ -240,7 +282,7 @@ function CreateNewItemForm({
                      </Label>
                   </div>
                </div>
-               <LocationSelectableDialog locations={locations} />
+               <SelectLocations />
 
                <div className='flex flex-col justify-start'>
                   <div className='flex items-center justify-between'>
@@ -260,10 +302,11 @@ function CreateNewItemForm({
                               </TooltipContent>
                            </Tooltip>
                         </TooltipProvider>
+                        <AddVariation />
                      </div>
                   </div>
                </div>
-               <div className='space-y-4'></div>
+               <div className='space-y-4'>{<VariationTable />}</div>
 
                <div className='space-y-4'>
                   <Label className='block mb-1'>Vendor</Label>
