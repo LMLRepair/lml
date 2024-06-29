@@ -3,6 +3,7 @@ import ModalProvider from '@/providers/model-provider';
 import { Metadata } from 'next';
 import { Poppins } from 'next/font/google';
 import './globals.css';
+// import VariationProvider from '@/providers/VariationManagement';
 
 const poppins = Poppins({
    weight: '400',
@@ -26,7 +27,10 @@ export default function RootLayout({
       <html lang='en' suppressHydrationWarning>
          <body className={poppins.className}>
             <ModalProvider>
+               {/* <VariationProvider> */}
                <main>{children}</main>
+               {/* </VariationProvider> */}
+
                <Toaster />
             </ModalProvider>
          </body>

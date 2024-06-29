@@ -186,3 +186,47 @@ export const updateCategory = async (
       return { status: 'error' };
    }
 };
+
+export type DeleteCategoryResponse = {
+   status: string;
+   message: string;
+};
+
+export const deleteCategoryFn = async (
+   categoryId: number
+): Promise<DeleteCategoryResponse> => {
+   try {
+      const existingCategory = await prisma.itemsCategory.findUnique({
+         where: {
+            itemsCategoryId: categoryId,
+         },
+         include: {
+            subCategories: true,
+         },
+      });
+
+      if (!existingCategory) {
+         throw new Error('Category Not found');
+      }
+
+      // Delete all subcategories
+      await prisma.$transaction(
+         existingCategory.subCategories.flatMap((subCategory) => [
+            prisma.itemsSubCategory.delete({
+               where: { itemsSubCategoryId: subCategory.itemsSubCategoryId },
+            }),
+         ])
+      );
+
+      // Delete the category
+      await prisma.itemsCategory.delete({
+         where: {
+            itemsCategoryId: categoryId,
+         },
+      });
+
+      return { status: 'success', message: 'Category Successfully Deleted' };
+   } catch (error) {
+      throw new Error('Failed to Delete category');
+   }
+};

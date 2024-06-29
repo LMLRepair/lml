@@ -15,7 +15,7 @@ import { Label } from './ui/label';
 import { Button } from './ui/button';
 import { Input } from './ui/input';
 
-const LocationSelector = ({ locations, handleSelectedLocations }: any) => {
+const LocationSelector = ({ locations }: any) => {
    const [selectedLocations, setSelectedLocations] = useState<
       { id: string; name: string }[]
    >([]);
@@ -29,10 +29,8 @@ const LocationSelector = ({ locations, handleSelectedLocations }: any) => {
    };
 
    const handleSubmit = () => {
-      console.log(selectedLocations);
-      handleSelectedLocations(selectedLocations);
-      //   console.log('Selected locations:', selectedLocations);
-      //   console.log(selectedLocations);
+      // Handle the save action here
+      console.log('Selected locations:', selectedLocations);
    };
 
    return (
@@ -44,11 +42,11 @@ const LocationSelector = ({ locations, handleSelectedLocations }: any) => {
                   {selectedLocations && selectedLocations.length > 0 ? (
                      <span className='text-sm'>
                         {selectedLocations.length > 1
-                           ? `${selectedLocations.length} locations `
+                           ? `${selectedLocations.length} locations selected`
                            : selectedLocations[0].name}
                      </span>
                   ) : (
-                     <span className='text-sm'>No locations</span>
+                     <span className='text-sm'>All locations</span>
                   )}
                   <Input placeholder='All locations' className='hidden' />
                </div>
