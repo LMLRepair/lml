@@ -1,8 +1,12 @@
 'use client';
 
-import { Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { AddCategoryDialog } from './AddCategoryDialog';
+import DeleteItemCategory from './DeleteItemCateogory';
 import { EditCategoryDialog } from './EditCategoryDialog';
+import { Button } from './ui/button';
 import { Card } from './ui/card';
+import { Input } from './ui/input';
 import {
    Table,
    TableBody,
@@ -11,13 +15,7 @@ import {
    TableHeader,
    TableRow,
 } from './ui/table';
-import { DatePickerDemo } from './DatePicker';
-import { AddCategoryDialog } from './AddCategoryDialog';
-import { Input } from './ui/input';
-import { useState } from 'react';
-import { InventoryItem } from '@prisma/client';
 import { useRouter } from 'next/navigation';
-import { Button } from './ui/button';
 
 function CategoryTable({ categories }: any) {
    const router = useRouter();
@@ -107,9 +105,8 @@ function CategoryTable({ categories }: any) {
                                     <EditCategoryDialog
                                        categoryId={cate.itemsCategoryId}
                                     />
-                                    <Trash2
-                                       size={20}
-                                       className='text-red-500 cursor-pointer'
+                                    <DeleteItemCategory
+                                       itemCategoryId={cate.itemsCategoryId}
                                     />
                                  </div>
                               </TableCell>

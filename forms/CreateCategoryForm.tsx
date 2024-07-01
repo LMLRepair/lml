@@ -69,8 +69,6 @@ function CreateCategoryForm() {
                imageUrl = newBlob.url;
             }
 
-            console.log(imageUrl);
-
             const res = await createCategory({
                name: data.name,
                subCategories: data.subCategories,
@@ -81,11 +79,10 @@ function CreateCategoryForm() {
                   title: 'Created: Category',
                   description: `${res.category.name} has been created.`,
                });
-               router.push('/dashboard/inventory/categories');
+               router.refresh();
                setClose();
             }
          } catch (error) {
-            console.log(error);
             toast({
                title: 'Error',
                description: 'Failed to create category.',

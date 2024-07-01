@@ -12,10 +12,7 @@ import {
    SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import {
-   getInventoryItemById,
-   updateInventoryItem,
-} from '@/lib/db/InventoryItemCrud';
+import { getInventoryItemById } from '@/lib/db/InventoryItemCrud';
 import { useModal } from '@/providers/model-provider';
 import { ItemsCategory, ItemsSubCategory, Location } from '@prisma/client';
 import { CircleDashedIcon, X } from 'lucide-react';
@@ -23,9 +20,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useToast } from '../components/ui/use-toast';
-import variationTable from '@/components/VariationsTable';
-import { PutBlobResult } from '@vercel/blob';
-import VariationTable from '@/components/VariationsTable';
 
 type Vendor = {
    vendorId: number;
@@ -69,7 +63,6 @@ function EditItemForm({
    const { setClose } = useModal();
    const router = useRouter();
    const [fetchingOne, setFetchingOne] = useState(false);
-   const [variationsData, setVariationsData] = useState<any>([]);
    const [image, setImage] = useState<File | null>(null);
 
    const {
@@ -89,7 +82,6 @@ function EditItemForm({
             setValue('description', item.description);
             setValue('brand', item.brand);
             setValue('vendor', item.vendor.name);
-            setVariationsData(item.variations);
             setValue('category', String(item.itemsCategoryId));
             setValue('subCategory', String(item.itemsSubCategoryId));
             setValue('location', String(item.locationId));
@@ -103,23 +95,6 @@ function EditItemForm({
       fetchInventoryItemById();
    }, []);
 
-   const handleDeleteVariation = (deleteIndex: number) => {
-      setVariationsData((prev: any) =>
-         prev.filter((_: any, index: number) => index !== deleteIndex)
-      );
-   };
-
-   const handleEditVariation = (
-      editIndex: number,
-      editedVariation: Variations
-   ) => {
-      setVariationsData((prev: any) =>
-         prev.map((variation: Variations, index: number) =>
-            index === editIndex ? editedVariation : variation
-         )
-      );
-   };
-
    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
          setImage(e.target.files[0]);
@@ -128,79 +103,71 @@ function EditItemForm({
 
    //Todo: Handle form submission
    const onSubmit: SubmitHandler<Inputs> = (data) => {
-      let imageUrl: string | null = null;
-      let variationImages: string[] = [];
-
-      startTransition(async () => {
-         try {
-            if (image) {
-               const response = await fetch(
-                  `/api/upload?filename=${image.name}`,
-                  {
-                     method: 'POST',
-                     body: image,
-                  }
-               );
-
-               if (!response.ok) {
-                  throw new Error('Failed to upload file.');
-               }
-
-               const newBlob = (await response.json()) as PutBlobResult;
-               imageUrl = newBlob.url;
-            }
-
-            if (variationsData.length > 0) {
-               for (const variation of variationsData) {
-                  if (variation.image && variation.image instanceof File) {
-                     const response = await fetch(
-                        `/api/upload?filename=${variation.image.name}`,
-                        {
-                           method: 'POST',
-                           body: variation.image,
-                        }
-                     );
-
-                     if (!response.ok) {
-                        throw new Error('Failed to upload file.');
-                     }
-
-                     const newBlob = (await response.json()) as PutBlobResult;
-                     variationImages.push(newBlob.url);
-                  }
-               }
-            }
-
-            const res = await updateInventoryItem(itemId, {
-               name: data.item,
-               description: data.description,
-               brand: data.brand,
-               image: imageUrl,
-               variations: variationsData.map((variation: Variations) => ({
-                  name: variation.name,
-                  price: variation.price,
-                  sku: variation.sku,
-                  quantity: variation.quantity,
-                  image: variationImages.shift(),
-               })),
-               vendor: data.vendor,
-               category: data.category,
-               subCategory: data.subCategory,
-               location: data.location,
-            });
-
-            if (res.status === 'success') {
-               toast({
-                  title: 'Item created',
-                  description: 'Item has been created successfully',
-               });
-               router.refresh();
-               setClose();
-            }
-         } catch (error) {
-            console.log(error);
-         }
-      });
+      // let imageUrl: string | null = null;
+      // let variationImages: string[] = [];
+      // startTransition(async () => {
+      //    try {
+      //       if (image) {
+      //          const response = await fetch(
+      //             `/api/upload?filename=${image.name}`,
+      //             {
+      //                method: 'POST',
+      //                body: image,
+      //             }
+      //          );
+      //          if (!response.ok) {
+      //             throw new Error('Failed to upload file.');
+      //          }
+      //          const newBlob = (await response.json()) as PutBlobResult;
+      //          imageUrl = newBlob.url;
+      //       }
+      //       if (variationsData.length > 0) {
+      //          for (const variation of variationsData) {
+      //             if (variation.image && variation.image instanceof File) {
+      //                const response = await fetch(
+      //                   `/api/upload?filename=${variation.image.name}`,
+      //                   {
+      //                      method: 'POST',
+      //                      body: variation.image,
+      //                   }
+      //                );
+      //                if (!response.ok) {
+      //                   throw new Error('Failed to upload file.');
+      //                }
+      //                const newBlob = (await response.json()) as PutBlobResult;
+      //                variationImages.push(newBlob.url);
+      //             }
+      //          }
+      //       }
+      //       const res = await updateInventoryItem(itemId, {
+      //          name: data.item,
+      //          description: data.description,
+      //          brand: data.brand,
+      //          image: imageUrl,
+      //          variations: variationsData.map((variation: Variations) => ({
+      //             name: variation.name,
+      //             price: variation.price,
+      //             sku: variation.sku,
+      //             quantity: variation.quantity,
+      //             image: variationImages.shift(),
+      //          })),
+      //          vendor: data.vendor,
+      //          category: data.category,
+      //          subCategory: data.subCategory,
+      //          location: data.location,
+      //       });
+      //       if (res.status === 'success') {
+      //          toast({
+      //             title: 'Item created',
+      //             description: 'Item has been created successfully',
+      //          });
+      //          router.refresh();
+      //          setClose();
+      //       }
+      //    } catch (error) {
+      //       console.log(error);
+      //    }
+      // });
    };
 
    return (
@@ -366,20 +333,6 @@ function EditItemForm({
                               </Select>
                            )}
                         />
-                     </div>
-                     <div>
-                        {variationsData.length > 0 && (
-                           <>
-                              <Label className='font-semibold'>
-                                 Variations
-                              </Label>
-                              <VariationTable
-                                 variationData={variationsData}
-                                 handleDeleteVariation={handleDeleteVariation}
-                                 handleEditVariation={handleEditVariation}
-                              />
-                           </>
-                        )}
                      </div>
                   </div>
                </div>
