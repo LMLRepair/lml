@@ -4,8 +4,6 @@ import { fetchInventoryBrands } from '@/lib/FetchBrands';
 const Locations = async () => {
    const { brands, error } = await fetchInventoryBrands();
 
-   console.log(brands);
-
    return (
       <div>
          {error ? (

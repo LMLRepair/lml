@@ -3,9 +3,9 @@
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Checkbox } from '@/components/ui/checkbox';
 
-import LocationSelectableDialog from '@/components/LocationSelectableDialog';
+import useFormStore from '@/app/store';
+import SelectLocations from '@/components/SelectLocations';
 import {
    Select,
    SelectContent,
@@ -26,20 +26,17 @@ import {
    InventoryItemBrand,
    ItemsCategory,
    ItemsSubCategory,
-   Location,
    Vendor,
 } from '@prisma/client';
 import { PutBlobResult } from '@vercel/blob';
 import { CircleDashedIcon, ShieldQuestion, X } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
-import { useToast } from '../components/ui/use-toast';
-import VariationsDialog from '../components/AddVariation';
-import VariationTable from '../components/VariationsTable';
-import Image from 'next/image';
 import AddVariation from '../components/AddVariation';
-import SelectLocations from '@/components/SelectLocations';
+import { useToast } from '../components/ui/use-toast';
+import VariationTable from '../components/VariationsTable';
 
 type Inputs = {
    item: string;
@@ -55,17 +52,8 @@ type Inputs = {
 type CreateNewItemProps = {
    categories: ItemsCategory[];
    subCategories: ItemsSubCategory[];
-   locations: Location[];
    brands: InventoryItemBrand[];
    vendors: Vendor[];
-};
-
-type Variation = {
-   name: string;
-   price: string;
-   sku: string;
-   quantity: string;
-   image?: File | null | string;
 };
 
 export type SelectedLocationsType = { id: string; name: string }[];
@@ -73,10 +61,11 @@ export type SelectedLocationsType = { id: string; name: string }[];
 function CreateNewItemForm({
    categories,
    subCategories,
-   locations,
    brands,
    vendors,
 }: CreateNewItemProps) {
+   const { variations } = useFormStore();
+
    const router = useRouter();
    const { toast } = useToast();
    const [isPending, startTransition] = useTransition();
@@ -90,13 +79,6 @@ function CreateNewItemForm({
    } = useForm<Inputs>();
    const [image, setImage] = useState<File | null | string>(null);
    const [preview, setPreview] = useState<any>(null);
-   const [variationsData, setVariationsData] = useState<Variation[]>([]);
-   const [selectedLocations, setSelectedLocations] =
-      useState<SelectedLocationsType>([]);
-
-   const handleSelectedLocations = (checkedLocations: any) => {
-      setSelectedLocations(checkedLocations);
-   };
 
    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
@@ -107,93 +89,50 @@ function CreateNewItemForm({
       }
    };
 
-   const handleOptionsData = (options: Variation[]) => {
-      setVariationsData((prevData) => [...prevData, ...options]);
-   };
-
-   const handleDeleteVariation = (deleteIndex: number) => {
-      const updatedVariations = variationsData.filter(
-         (_: Variation, index: number) => index !== deleteIndex
-      );
-      setVariationsData(updatedVariations);
-   };
-
-   const handleEditVariation = (
-      editIndex: number,
-      editedVariation: Variation
-   ) => {
-      const updatedVariations = variationsData.map((variation, index) =>
-         index === editIndex ? editedVariation : variation
-      );
-      setVariationsData(updatedVariations);
-   };
-
    const onSubmit: SubmitHandler<Inputs> = (data) => {
-      // let imageUrl: string | null = null;
-      // let variationImages: string[] = [];
-      // startTransition(async () => {
-      //    try {
-      //       if (image && image instanceof File) {
-      //          const response = await fetch(
-      //             `/api/upload?filename=${image.name}`,
-      //             {
-      //                method: 'POST',
-      //                body: image,
-      //             }
-      //          );
-      //          if (!response.ok) {
-      //             throw new Error('Failed to upload file.');
-      //          }
-      //          const newBlob = (await response.json()) as PutBlobResult;
-      //          imageUrl = newBlob.url;
-      //       }
-      //       if (variationsData.length > 0) {
-      //          for (const variation of variationsData) {
-      //             if (variation.image && variation.image instanceof File) {
-      //                const response = await fetch(
-      //                   `/api/upload?filename=${variation.image.name}`,
-      //                   {
-      //                      method: 'POST',
-      //                      body: variation.image,
-      //                   }
-      //                );
-      //                if (!response.ok) {
-      //                   throw new Error('Failed to upload file.');
-      //                }
-      //                const newBlob = (await response.json()) as PutBlobResult;
-      //                variationImages.push(newBlob.url);
-      //             }
-      //          }
-      //       }
-      //       const res = await createInventoryItem({
-      //          name: data.item,
-      //          description: data.description,
-      //          variations: variationsData.map((variation, index) => ({
-      //             name: variation.name,
-      //             price: variation.price,
-      //             sku: variation.sku,
-      //             quantity: variation.quantity,
-      //             image: variationImages[index],
-      //          })),
-      //          brand: data.brand,
-      //          vendor: data.vendor,
-      //          category: data.category,
-      //          subCategory: data.subCategory,
-      //          location: data.location,
-      //          image: imageUrl,
-      //       });
-      //       if (res.status === 'success') {
-      //          toast({
-      //             title: 'Item created',
-      //             description: 'Item has been created successfully',
-      //          });
-      //          router.push('/dashboard/inventory/items');
-      //          setClose();
-      //       }
-      //    } catch (error) {
-      //       console.log(error);
-      //    }
-      // });
+      let imageUrl: string | null = null;
+      startTransition(async () => {
+         try {
+            if (image && image instanceof File) {
+               const response = await fetch(
+                  `/api/upload?filename=${image.name}`,
+                  {
+                     method: 'POST',
+                     body: image,
+                  }
+               );
+               if (!response.ok) {
+                  throw new Error('Failed to upload file.');
+               }
+               const newBlob = (await response.json()) as PutBlobResult;
+               imageUrl = newBlob.url;
+            }
+            const res = await createInventoryItem({
+               name: data.item,
+               description: data.description,
+               brandId: data.brand,
+               vendorId: data.vendor,
+               categoryId: data.category,
+               subCategoryId: data.subCategory,
+               image: imageUrl,
+               variations: variations,
+            });
+
+            if (res.status === 'success') {
+               toast({
+                  title: 'Item created',
+                  description: 'Item has been created successfully',
+               });
+               router.push('/dashboard/inventory/items');
+               setClose();
+            }
+         } catch (error) {
+            toast({
+               title: 'Failed',
+               description: 'Item has not been created',
+            });
+         }
+      });
    };
 
    return (
@@ -222,7 +161,7 @@ function CreateNewItemForm({
             <h1 className='font-bold text-lg'>Details</h1>
             {/* <div className='flex '> */}
             <form
-               className='space-y-4 w-full max-w-lg'
+               className='space-y-4 w-full max-w-3xl'
                onSubmit={handleSubmit(onSubmit)}
             >
                <div>
@@ -306,7 +245,7 @@ function CreateNewItemForm({
                      </div>
                   </div>
                </div>
-               <div className='space-y-4'>{<VariationTable />}</div>
+               {variations && variations.length > 0 && <VariationTable />}
 
                <div className='space-y-4'>
                   <Label className='block mb-1'>Vendor</Label>

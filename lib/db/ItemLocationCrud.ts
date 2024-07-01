@@ -6,9 +6,6 @@ import { Location } from '@prisma/client';
 export const getLocations = async (): Promise<Location[]> => {
    try {
       return await prisma.location.findMany({
-         include: {
-            items: true,
-         },
          orderBy: { name: 'asc' },
       });
    } catch (error) {
@@ -88,5 +85,36 @@ export const updateLocation = async (
    } catch (error) {
       console.log(error);
       return { status: 'error' };
+   }
+};
+
+export type DeleteLocationCrud = {
+   status: string;
+   message: string;
+};
+
+export const deleteLocationFn = async (
+   locationId: number
+): Promise<DeleteLocationCrud> => {
+   try {
+      const existingLocation = await prisma.location.findUnique({
+         where: {
+            locationId: locationId,
+         },
+      });
+
+      if (!existingLocation) {
+         throw new Error('Location Not found');
+      }
+
+      await prisma.location.delete({
+         where: {
+            locationId: locationId,
+         },
+      });
+
+      return { status: 'success', message: 'Location Successfully Deleted' };
+   } catch (error) {
+      throw new Error('Failed to Delete Location');
    }
 };

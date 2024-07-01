@@ -7,6 +7,8 @@ import { useModal } from '@/providers/model-provider';
 import { Pencil } from 'lucide-react';
 import { useTransition } from 'react';
 import { useToast } from './ui/use-toast';
+import { fetchInventoryBrands } from '@/lib/FetchBrands';
+import { fetchVendors } from '@/lib/FetchVendors';
 
 type EditInventoryItemDialogProps = {
    itemId: number;
@@ -24,12 +26,17 @@ export function EditItemDialog({ itemId }: EditInventoryItemDialogProps) {
             const categoriesPromise = getCategory();
             const subCategoriesPromise = getSubCategory();
             const locationsPromise = getLocations();
+            const brandPromise = fetchInventoryBrands();
+            const vendorPromise = fetchVendors();
 
-            const [categories, subCategories, locations] = await Promise.all([
-               categoriesPromise,
-               subCategoriesPromise,
-               locationsPromise,
-            ]);
+            const [categories, subCategories, locations, brands, vendors] =
+               await Promise.all([
+                  categoriesPromise,
+                  subCategoriesPromise,
+                  locationsPromise,
+                  brandPromise,
+                  vendorPromise,
+               ]);
 
             setOpen({
                content: (
@@ -38,6 +45,8 @@ export function EditItemDialog({ itemId }: EditInventoryItemDialogProps) {
                      categories={categories}
                      subCategories={subCategories}
                      locations={locations}
+                     brands={brands.brands}
+                     vendors={vendors.vendors}
                   />
                ),
             });

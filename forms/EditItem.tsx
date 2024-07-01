@@ -12,19 +12,35 @@ import {
    SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { getInventoryItemById } from '@/lib/db/InventoryItemCrud';
+import {
+   getInventoryItemById,
+   updateInventoryItem,
+} from '@/lib/db/InventoryItemCrud';
 import { useModal } from '@/providers/model-provider';
-import { ItemsCategory, ItemsSubCategory, Location } from '@prisma/client';
+import {
+   InventoryItemBrand,
+   ItemsCategory,
+   ItemsSubCategory,
+   Location,
+   Variation,
+   Vendor,
+} from '@prisma/client';
 import { CircleDashedIcon, X } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { Controller, SubmitHandler, useForm } from 'react-hook-form';
 import { useToast } from '../components/ui/use-toast';
+import { brands } from '@/prisma/serviceItems';
+import Image from 'next/image';
+import SelectLocations from '@/components/SelectLocations';
+import useFormStore from '@/app/store';
+import VariationTable from '@/components/VariationsTable';
+import { PutBlobResult } from '@vercel/blob';
 
-type Vendor = {
-   vendorId: number;
-   name: string;
-};
+// type Vendor = {
+//    vendorId: number;
+//    name: string;
+// };
 
 type Variations = {
    name: string;
@@ -49,6 +65,8 @@ type EditItemProps = {
    categories: ItemsCategory[];
    subCategories: ItemsSubCategory[];
    locations: Location[];
+   brands: InventoryItemBrand[];
+   vendors: Vendor[];
    itemId: number;
 };
 
@@ -57,13 +75,17 @@ function EditItemForm({
    subCategories,
    locations,
    itemId,
+   brands,
+   vendors,
 }: EditItemProps) {
    const [isPending, startTransition] = useTransition();
+   const [item, setItem] = useState(null);
    const { toast } = useToast();
    const { setClose } = useModal();
    const router = useRouter();
    const [fetchingOne, setFetchingOne] = useState(false);
    const [image, setImage] = useState<File | null>(null);
+   const { addVariation, variations } = useFormStore();
 
    const {
       register,
@@ -80,11 +102,13 @@ function EditItemForm({
             const item = await getInventoryItemById(itemId);
             setValue('item', item.name);
             setValue('description', item.description);
-            setValue('brand', item.brand);
-            setValue('vendor', item.vendor.name);
+            setValue('brand', String(item.brandId));
+            setValue('vendor', String(item.vendorId));
             setValue('category', String(item.itemsCategoryId));
             setValue('subCategory', String(item.itemsSubCategoryId));
             setValue('location', String(item.locationId));
+            setItem(item);
+
             setFetchingOne(false);
          } catch (error) {
             setFetchingOne(false);
@@ -93,7 +117,7 @@ function EditItemForm({
       }
 
       fetchInventoryItemById();
-   }, []);
+   }, [itemId]);
 
    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       if (e.target.files) {
@@ -103,71 +127,46 @@ function EditItemForm({
 
    //Todo: Handle form submission
    const onSubmit: SubmitHandler<Inputs> = (data) => {
-      // let imageUrl: string | null = null;
-      // let variationImages: string[] = [];
-      // startTransition(async () => {
-      //    try {
-      //       if (image) {
-      //          const response = await fetch(
-      //             `/api/upload?filename=${image.name}`,
-      //             {
-      //                method: 'POST',
-      //                body: image,
-      //             }
-      //          );
-      //          if (!response.ok) {
-      //             throw new Error('Failed to upload file.');
-      //          }
-      //          const newBlob = (await response.json()) as PutBlobResult;
-      //          imageUrl = newBlob.url;
-      //       }
-      //       if (variationsData.length > 0) {
-      //          for (const variation of variationsData) {
-      //             if (variation.image && variation.image instanceof File) {
-      //                const response = await fetch(
-      //                   `/api/upload?filename=${variation.image.name}`,
-      //                   {
-      //                      method: 'POST',
-      //                      body: variation.image,
-      //                   }
-      //                );
-      //                if (!response.ok) {
-      //                   throw new Error('Failed to upload file.');
-      //                }
-      //                const newBlob = (await response.json()) as PutBlobResult;
-      //                variationImages.push(newBlob.url);
-      //             }
-      //          }
-      //       }
-      //       const res = await updateInventoryItem(itemId, {
-      //          name: data.item,
-      //          description: data.description,
-      //          brand: data.brand,
-      //          image: imageUrl,
-      //          variations: variationsData.map((variation: Variations) => ({
-      //             name: variation.name,
-      //             price: variation.price,
-      //             sku: variation.sku,
-      //             quantity: variation.quantity,
-      //             image: variationImages.shift(),
-      //          })),
-      //          vendor: data.vendor,
-      //          category: data.category,
-      //          subCategory: data.subCategory,
-      //          location: data.location,
-      //       });
-      //       if (res.status === 'success') {
-      //          toast({
-      //             title: 'Item created',
-      //             description: 'Item has been created successfully',
-      //          });
-      //          router.refresh();
-      //          setClose();
-      //       }
-      //    } catch (error) {
-      //       console.log(error);
-      //    }
-      // });
+      let imageUrl: string | null = null;
+
+      startTransition(async () => {
+         try {
+            if (image) {
+               const response = await fetch(
+                  `/api/upload?filename=${image.name}`,
+                  {
+                     method: 'POST',
+                     body: image,
+                  }
+               );
+               if (!response.ok) {
+                  throw new Error('Failed to upload file.');
+               }
+               const newBlob = (await response.json()) as PutBlobResult;
+               imageUrl = newBlob.url;
+            }
+
+            const res = await updateInventoryItem(itemId, {
+               name: data.item,
+               description: data.description,
+               brandId: data.brand,
+               image: imageUrl,
+               vendorId: data.vendor,
+               categoryId: data.category,
+               subCategoryId: data.subCategory,
+            });
+            if (res.status === 'success') {
+               toast({
+                  title: 'Item created',
+                  description: 'Item has been created successfully',
+               });
+               router.refresh();
+               setClose();
+            }
+         } catch (error) {
+            console.log(error);
+         }
+      });
    };
 
    return (
@@ -179,10 +178,7 @@ function EditItemForm({
                </Button>
 
                <h1 className='text-2xl font-semibold'>Edit Item</h1>
-               <Button
-                  className='bg-blue-500 text-white'
-                  onClick={handleSubmit(onSubmit)}
-               >
+               <Button onClick={handleSubmit(onSubmit)}>
                   {isPending ? (
                      <>
                         <CircleDashedIcon size={20} className='animate-spin' />
@@ -195,7 +191,7 @@ function EditItemForm({
 
             <div className='mt-6'>
                <h2 className='mb-4 text-2xl font-semibold mt-10'>Details</h2>
-               {fetchingOne && <p>Loading...</p>}
+
                <div className='grid grid-cols-2 gap-8'>
                   <div className='space-y-4'>
                      <div className='flex flex-col  gap-2'>
@@ -203,6 +199,7 @@ function EditItemForm({
                         <Input
                            placeholder='e.g iPhone 12'
                            {...register('item')}
+                           disabled={fetchingOne}
                         />
                      </div>
                      <div>
@@ -214,15 +211,66 @@ function EditItemForm({
                         />
                      </div>
                      <div>
-                        <Label className='font-semibold'>Brand</Label>
-                        <Input placeholder='Apple...' {...register('brand')} />
+                        <Label className='font-semibold'>Brands</Label>
+                        <Controller
+                           name='brand'
+                           control={control}
+                           render={({ field }) => (
+                              <Select
+                                 onValueChange={field.onChange}
+                                 value={field.value}
+                              >
+                                 <SelectTrigger className='w-full'>
+                                    <SelectValue placeholder='Select a category' />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectGroup>
+                                       {brands.map(
+                                          (brand: InventoryItemBrand) => (
+                                             <SelectItem
+                                                key={brand.brandInventoryId}
+                                                value={String(
+                                                   brand.brandInventoryId
+                                                )}
+                                             >
+                                                {brand.brandInventoryName}
+                                             </SelectItem>
+                                          )
+                                       )}
+                                    </SelectGroup>
+                                 </SelectContent>
+                              </Select>
+                           )}
+                        />
                      </div>
 
                      <div>
-                        <Label className='font-semibold'>Vendor</Label>
-                        <Input
-                           placeholder='Vendor...'
-                           {...register('vendor')}
+                        <Label className='font-semibold'>Vendors</Label>
+                        <Controller
+                           name='vendor'
+                           control={control}
+                           render={({ field }) => (
+                              <Select
+                                 onValueChange={field.onChange}
+                                 value={field.value}
+                              >
+                                 <SelectTrigger className='w-full'>
+                                    <SelectValue placeholder='Select a category' />
+                                 </SelectTrigger>
+                                 <SelectContent>
+                                    <SelectGroup>
+                                       {vendors.map((vendor: Vendor) => (
+                                          <SelectItem
+                                             key={vendor.vendorId}
+                                             value={String(vendor.vendorId)}
+                                          >
+                                             {vendor.name}
+                                          </SelectItem>
+                                       ))}
+                                    </SelectGroup>
+                                 </SelectContent>
+                              </Select>
+                           )}
                         />
                      </div>
                   </div>
@@ -241,6 +289,7 @@ function EditItemForm({
                            />
                         </Label>
                      </div>
+
                      <div>
                         <Label className='font-semibold'>Categories</Label>
                         <Controller
@@ -305,7 +354,9 @@ function EditItemForm({
                            )}
                         />
                      </div>
-                     <div>
+                     {/* <SelectLocations /> */}
+
+                     {/* <div>
                         <Label className='font-semibold'>Location</Label>
                         <Controller
                            name='location'
@@ -333,7 +384,7 @@ function EditItemForm({
                               </Select>
                            )}
                         />
-                     </div>
+                     </div> */}
                   </div>
                </div>
             </div>

@@ -26,6 +26,21 @@ import {
    TooltipTrigger,
 } from './ui/tooltip';
 
+// interface Location {
+//    locationId: number;
+//    name: string;
+//    description?: string;
+// }
+
+// interface InventoryItem {
+//    variations: {
+//       locations: {
+//          location: Location;
+//          stock: number;
+//       }[];
+//    }[];
+// }
+
 interface Props {
    items: any;
 }
@@ -88,7 +103,7 @@ function ItemsTable({ items }: Props) {
                         <TableHead>Stock</TableHead>
                         <TableHead>Brand</TableHead>
                         <TableHead>Vendor</TableHead>
-                        <TableHead>Price</TableHead>
+                        <TableHead>Cost</TableHead>
                         <TableHead>Location</TableHead>
                         <TableHead>Actions</TableHead>
                      </TableRow>
@@ -124,13 +139,23 @@ function ItemsTable({ items }: Props) {
                                  <Link
                                     href={`/inventory/itemsVariation/${item.inventoryItemId}`}
                                  >
-                                    Variation
+                                    {item.variations.length > 1
+                                       ? `${item.variations.length} Variations`
+                                       : item.variations.length === 1 &&
+                                         item.variations[0].name}
                                  </Link>
                               </TableCell>
                               <TableCell>
                                  {item.variations
-                                    ?.map((vr: any) => vr.quantity)
-                                    .reduce((a: any, b: any) => a + b, 0)}
+                                    .map(
+                                       (variation: any) => variation.locations
+                                    )
+                                    .flat()
+                                    .reduce(
+                                       (total: number, location: any) =>
+                                          total + location?.stock,
+                                       0
+                                    )}
                               </TableCell>
 
                               <TableCell>
@@ -145,16 +170,48 @@ function ItemsTable({ items }: Props) {
                                           $
                                           {Math.min(
                                              ...item.variations.map(
-                                                (vr: any) => vr.price
+                                                (variation: any) => {
+                                                   const raw = parseFloat(
+                                                      variation.raw
+                                                   );
+                                                   const tax =
+                                                      parseFloat(
+                                                         variation.tax
+                                                      ) / 100;
+                                                   const shipping = parseFloat(
+                                                      variation.shipping
+                                                   );
+                                                   const cost =
+                                                      raw +
+                                                      raw * tax +
+                                                      shipping;
+                                                   return Math.round(cost);
+                                                }
                                              )
-                                          )}{' '}
+                                          )}
                                        </span>
-                                       -{' '}
+                                       {' - '}
                                        <span>
                                           $
                                           {Math.max(
                                              ...item.variations.map(
-                                                (vr: any) => vr.price
+                                                (variation: any) => {
+                                                   const raw = parseFloat(
+                                                      variation.raw
+                                                   );
+                                                   const tax =
+                                                      parseFloat(
+                                                         variation.tax
+                                                      ) / 100;
+                                                   const shipping = parseFloat(
+                                                      variation.shipping
+                                                   );
+                                                   const cost =
+                                                      raw +
+                                                      raw * tax +
+                                                      shipping;
+                                                   return Math.round(cost);
+                                                }
                                              )
                                           )}
                                        </span>
@@ -163,10 +220,42 @@ function ItemsTable({ items }: Props) {
                                     'No variations'
                                  )}
                               </TableCell>
-                              <TableCell>
-                                 {item.location?.name || 'N/A'}
-                              </TableCell>
 
+                              <TableCell>
+                                 {(() => {
+                                    // Get all locations from all variations
+                                    const allLocations =
+                                       item.variations.flatMap(
+                                          (variation: any) =>
+                                             variation.locations.map(
+                                                (location: any) => ({
+                                                   locationId:
+                                                      location.location
+                                                         .locationId,
+                                                   name: location.location.name,
+                                                   description:
+                                                      location.location
+                                                         .description,
+                                                })
+                                             )
+                                       );
+
+                                    // Get unique locations by locationId
+                                    const uniqueLocations = [
+                                       ...new Map(
+                                          allLocations.map((location: any) => [
+                                             location.locationId,
+                                             location,
+                                          ])
+                                       ).values(),
+                                    ];
+
+                                    return uniqueLocations.length > 1
+                                       ? `${uniqueLocations.length} Locations`
+                                       : uniqueLocations.length === 1 &&
+                                            uniqueLocations[0].name;
+                                 })()}
+                              </TableCell>
                               <TableCell>
                                  <div className='flex items-center gap-3'>
                                     <EditItemDialog

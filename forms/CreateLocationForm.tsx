@@ -39,7 +39,7 @@ function CreateNewLocationForm() {
                   description: `${res.location.name} has been created.`,
                });
 
-               router.push('/dashboard/inventory/locations');
+               router.refresh();
                setClose();
             }
          } catch (error) {

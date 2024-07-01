@@ -16,6 +16,7 @@ import {
 } from './ui/table';
 import { Button } from './ui/button';
 import { useRouter } from 'next/navigation';
+import DeleteItemLocation from './DeleteItemLocation';
 
 function CategoryTable({ locations }: any) {
    const router = useRouter();
@@ -32,6 +33,7 @@ function CategoryTable({ locations }: any) {
          location.name.toLowerCase().includes(search.toLocaleLowerCase())
       );
    });
+
    return (
       <div>
          <div className='space-y-3'>
@@ -59,9 +61,8 @@ function CategoryTable({ locations }: any) {
                <Table>
                   <TableHeader>
                      <TableRow>
-                        <TableHead className='lg:w-80'>Location</TableHead>
+                        <TableHead>Location</TableHead>
                         <TableHead>Description</TableHead>
-                        <TableHead>Items in Location</TableHead>
                         <TableHead>Actions</TableHead>
                      </TableRow>
                   </TableHeader>
@@ -69,24 +70,19 @@ function CategoryTable({ locations }: any) {
                      {filteredItems &&
                         filteredItems.map((locate: any) => (
                            <TableRow key={locate.locationId}>
-                              <TableCell className='lg;w-96'>
-                                 {locate.name}
-                              </TableCell>
+                              <TableCell>{locate.name}</TableCell>
                               <TableCell className='space-x-1 text-green-500 font-medium'>
                                  {locate.description}
                               </TableCell>
-                              <TableCell>
-                                 {locate.items && locate.items.length}
-                              </TableCell>
+
                               <TableCell>
                                  <div className='flex items-center gap-3'>
                                     <EditLocationDialog
                                        locationId={locate.locationId}
                                     />
 
-                                    <Trash2
-                                       size={18}
-                                       className='text-red-500 cursor-pointer'
+                                    <DeleteItemLocation
+                                       locationId={locate.locationId}
                                     />
                                  </div>
                               </TableCell>

@@ -1,17 +1,25 @@
 'use server';
 
 import prisma from '@/lib/prisma';
-import { InventoryItem, Vendor } from '@prisma/client';
+import { InventoryItem } from '@prisma/client';
 
 export const getInventoryItems = async (): Promise<InventoryItem[]> => {
    try {
       return await prisma.inventoryItem.findMany({
          include: {
-            variations: true,
+            variations: {
+               include: {
+                  locations: {
+                     include: {
+                        location: true,
+                     },
+                  }, // Include variationOnLocation data
+               },
+            },
+
             itemsCategory: true,
             itemsSubCategory: true,
             vendor: true,
-            location: true,
             brand: true,
          },
          orderBy: { inventoryItemId: 'asc' },
@@ -27,11 +35,18 @@ export const getInventoryItemById = async (itemId: number): Promise<any> => {
       return await prisma.inventoryItem.findUnique({
          where: { inventoryItemId: itemId },
          include: {
-            variations: true,
+            variations: {
+               include: {
+                  locations: {
+                     include: {
+                        location: true,
+                     },
+                  }, // Include variationOnLocation data
+               },
+            },
             itemsCategory: true,
             itemsSubCategory: true,
             vendor: true,
-            location: true,
          },
       });
    } catch (error) {
@@ -40,28 +55,33 @@ export const getInventoryItemById = async (itemId: number): Promise<any> => {
    }
 };
 
-type Variations = {
+type LocationInput = {
+   locationId: string;
+   stock: number;
+};
+
+type VariationsInput = {
    name: string;
-   price: string;
-   sku: string;
-   quantity: string;
-   image?: string;
+   variationTax: string;
+   variationShipping: string;
+   variationRaw: string;
+   sku?: string | null | undefined;
+   image?: string | null | undefined;
+   locations: LocationInput[];
 };
 
 type CreateItemInput = {
    name: string;
    description: string;
-   brand: string;
+   brandId: string;
+   vendorId: string;
+   categoryId: string;
+   subCategoryId?: string;
    image: string | null;
-   variations: Variations[];
-   vendor: string;
-   category: string;
-   subCategory?: string;
-   location?: string;
+   variations: VariationsInput[];
 };
 
 type CreateItemResponse = {
-   item: InventoryItem;
    status: string;
 };
 
@@ -72,55 +92,68 @@ export const createInventoryItem = async (
       name,
       description,
       variations,
-      brand,
-      vendor,
-      category,
-      subCategory,
-      location,
+      brandId,
+      vendorId,
+      categoryId,
+      subCategoryId,
       image,
    } = data;
 
+   console.log(data);
+
    try {
-      const createdItem = await prisma.$transaction(async (prisma) => {
-         // Create the vendor
-         const vendorRecord = await prisma.vendor.create({
-            data: { name: vendor },
-         });
+      await prisma.$transaction(
+         async (tx) => {
+            // Create the inventory item
+            const createdItem = await tx.inventoryItem.create({
+               data: {
+                  name,
+                  description,
+                  brandId: parseInt(brandId),
+                  vendorId: parseInt(vendorId),
+                  itemsCategoryId: parseInt(categoryId),
+                  itemsSubCategoryId: subCategoryId
+                     ? parseInt(subCategoryId)
+                     : undefined,
+                  image: image ?? '',
+               },
+            });
 
-         // Create the inventory item
-         const inventoryItem = await prisma.inventoryItem.create({
-            data: {
-               name,
-               description,
-               brand,
-               image: image ? image : '',
-               vendorId: vendorRecord.vendorId,
-               itemsCategoryId: Number(category),
-               itemsSubCategoryId: subCategory ? Number(subCategory) : null,
-               locationId: location ? Number(location) : null,
-            },
-         });
-
-         // Create the variations using Promise.all to ensure all variations are created before the transaction completes
-         await Promise.all(
-            variations.map(async (vr) => {
-               return prisma.variation.create({
+            // Create variations and link their corresponding locations
+            for (const variation of variations) {
+               const createdVariation = await tx.variation.create({
                   data: {
-                     name: vr.name,
-                     price: Number(vr.price),
-                     sku: vr.sku,
-                     quantity: Number(vr.quantity),
-                     image: vr.image ? vr.image : '',
-                     inventoryItemId: inventoryItem.inventoryItemId,
+                     name: variation.name,
+                     raw: parseFloat(variation.variationRaw),
+                     shipping: parseFloat(variation.variationShipping),
+                     tax: parseFloat(variation.variationTax),
+                     sku: variation.sku ?? '',
+                     image: variation.image ?? '',
+                     inventoryItemId: createdItem.inventoryItemId,
                   },
                });
-            })
-         );
 
-         return inventoryItem;
-      });
+               // Link locations for the current variation
+               await Promise.all(
+                  variation.locations.map((location) => {
+                     return tx.variationOnLocation.create({
+                        data: {
+                           stock: location.stock,
+                           variationId: createdVariation.variationId,
+                           locationId: Number(location.locationId),
+                        },
+                     });
+                  })
+               );
+            }
+         },
+         {
+            maxWait: 8000, //? default: 2000
+            timeout: 15000, //? default: 5000
+         }
+      );
 
-      return { item: createdItem, status: 'success' };
+      return { status: 'success' };
    } catch (error) {
       console.error('Error creating inventory item:', error);
       throw new Error('Failed to create inventory item');
@@ -128,15 +161,13 @@ export const createInventoryItem = async (
 };
 
 type UpdateItemInput = {
-   name: string;
-   description: string;
-   brand: string;
-   image: string | null;
-   variations: Variations[];
-   vendor: string;
-   category: string;
-   subCategory?: string;
-   location?: string;
+   name?: string;
+   description?: string;
+   brandId?: string;
+   vendorId?: string;
+   categoryId?: string;
+   subCategoryId?: string;
+   image?: string | null;
 };
 
 type UpdateItemResponse = {
@@ -150,9 +181,6 @@ export const updateInventoryItem = async (
    try {
       const existingItem = await prisma.inventoryItem.findUnique({
          where: { inventoryItemId: itemId },
-         include: {
-            variations: true,
-         },
       });
 
       if (!existingItem) {
@@ -164,43 +192,18 @@ export const updateInventoryItem = async (
          description: data.description
             ? data.description
             : existingItem.description,
-         brand: data.brand ? data.brand : existingItem.brand,
+         brandId: data.brandId ? Number(data.brandId) : existingItem.brandId,
          image: data.image ? data.image : existingItem.image,
-         vendorId: data.vendor
-            ? (await prisma.vendor.create({ data: { name: data.vendor } }))
-                 .vendorId
+         vendorId: data.vendorId
+            ? Number(data.vendorId)
             : existingItem.vendorId,
-         itemsCategoryId: data.category
-            ? Number(data.category)
+         itemsCategoryId: data.categoryId
+            ? Number(data.categoryId)
             : existingItem.itemsCategoryId,
-         itemsSubCategoryId: data.subCategory
-            ? Number(data.subCategory)
+         itemsSubCategoryId: data.subCategoryId
+            ? Number(data.subCategoryId)
             : existingItem.itemsSubCategoryId,
-         locationId: data.location
-            ? Number(data.location)
-            : existingItem.locationId,
       };
-
-      if (data.variations) {
-         await prisma.variation.deleteMany({
-            where: { inventoryItemId: itemId },
-         });
-
-         await Promise.all(
-            data.variations.map(async (vr) => {
-               return prisma.variation.create({
-                  data: {
-                     name: vr.name,
-                     price: Number(vr.price),
-                     sku: vr.sku,
-                     quantity: Number(vr.quantity),
-                     image: vr.image ? vr.image : '',
-                     inventoryItemId: itemId,
-                  },
-               });
-            })
-         );
-      }
 
       await prisma.inventoryItem.update({
          where: { inventoryItemId: Number(itemId) },

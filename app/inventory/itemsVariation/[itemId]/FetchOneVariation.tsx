@@ -1,7 +1,9 @@
 'use client';
 
+import { EditItemVariationDialog } from '@/components/EditItemVariationDialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+
 import {
    Table,
    TableBody,
@@ -10,7 +12,9 @@ import {
    TableHeader,
    TableRow,
 } from '@/components/ui/table';
+import EditVariationInfo from '@/forms/EditVariationInfo';
 import { Variation } from '@prisma/client';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
@@ -58,16 +62,21 @@ export default function ItemsVariationList({ variations }: any) {
                   <TableHead>Image</TableHead>
                   <TableHead>Name</TableHead>
                   <TableHead>SKU</TableHead>
-                  <TableHead>Quantity</TableHead>
-                  <TableHead>Price</TableHead>
+                  <TableHead>Stock</TableHead>
+                  <TableHead>Location</TableHead>
+                  <TableHead>Raw</TableHead>
+                  <TableHead>Tax</TableHead>
+                  <TableHead>Shipping</TableHead>
+                  <TableHead>Cost</TableHead>
+                  <TableHead>Actions</TableHead>
                </TableRow>
             </TableHeader>
             <TableBody>
-               {filteredVariations?.map((vr: Variation) => (
-                  <TableRow>
+               {filteredVariations?.map((vr: any) => (
+                  <TableRow key={vr.variationId}>
                      <TableCell>
-                        <img
-                           src={vr.image || '/'}
+                        <Image
+                           src={vr.image}
                            alt={`Variation-image-${vr.variationId}`}
                            width={50}
                            height={50}
@@ -76,8 +85,33 @@ export default function ItemsVariationList({ variations }: any) {
                      </TableCell>
                      <TableCell>{vr.name}</TableCell>
                      <TableCell>{vr.sku}</TableCell>
-                     <TableCell>{vr.quantity}</TableCell>
-                     <TableCell>{vr.price}</TableCell>
+                     <TableCell>
+                        {vr.locations
+                           .map((lc: any) => lc.stock)
+                           .reduce((ac: number, cr: number) => ac + cr, 0)}
+                     </TableCell>
+                     <TableCell>
+                        {vr.locations
+                           .map((nm: any) => nm.location)
+                           .map((lc: any) => lc.name)}
+                     </TableCell>
+                     <TableCell>{vr.raw}</TableCell>
+                     <TableCell>{vr.tax}</TableCell>
+                     <TableCell>{vr.shipping}</TableCell>
+                     <TableCell>
+                        {Math.round(
+                           parseFloat(vr.raw) +
+                              (parseFloat(vr.raw) * parseFloat(vr.tax)) / 100 +
+                              parseFloat(vr.shipping)
+                        )}
+                     </TableCell>
+
+                     <TableCell>
+                        <EditVariationInfo
+                           inventoryItemId={vr.inventoryItemId}
+                           variationId={vr.variationId}
+                        />
+                     </TableCell>
                   </TableRow>
                ))}
             </TableBody>

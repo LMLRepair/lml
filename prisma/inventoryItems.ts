@@ -59,29 +59,6 @@ export const Vendor = [
    { vendorId: 4, name: 'Apple Store' },
 ];
 
-export const Location = [
-   {
-      locationId: 1,
-      name: 'Warehouse A',
-      description: 'Main warehouse for storing inventory items.',
-   },
-   {
-      locationId: 2,
-      name: 'Retail Store 1',
-      description: 'Retail store located in downtown.',
-   },
-   {
-      locationId: 3,
-      name: 'Warehouse B',
-      description: 'Overflow warehouse for additional storage.',
-   },
-   {
-      locationId: 4,
-      name: 'Retail Store 2',
-      description: 'Second retail store in the suburbs.',
-   },
-];
-
 export const InventoryItemBrand = [
    {
       brandInventoryId: 1,
@@ -110,7 +87,6 @@ export const InventoryItem = [
       itemsCategoryId: 1, // Parts
       vendorId: 1, // TechParts Co.
       itemsSubCategoryId: 1, // Screen
-      locationId: 1, // Warehouse A
    },
    {
       inventoryItemId: 2,
@@ -122,7 +98,6 @@ export const InventoryItem = [
       itemsCategoryId: 3, // Accessories
       vendorId: 2, // ScreenGuard Inc.
       itemsSubCategoryId: 16, // Screen Protectors
-      locationId: 2, // Retail Store 1
    },
    {
       inventoryItemId: 3,
@@ -134,7 +109,6 @@ export const InventoryItem = [
       itemsCategoryId: 2, // Equipments
       vendorId: 3, // Logitech Official
       itemsSubCategoryId: 12, // Tools
-      locationId: 3, // Warehouse B
    },
    {
       inventoryItemId: 4,
@@ -145,7 +119,6 @@ export const InventoryItem = [
       itemsCategoryId: 4, // Devices
       vendorId: 4, // Apple Store
       itemsSubCategoryId: 20, // Watch
-      locationId: 4, // Retail Store 2
    },
 ];
 
@@ -156,8 +129,6 @@ export const Variation = [
       inventoryItemId: 1,
       image: '/iphone11red/test.jpg',
       name: 'iPhone 11 Screen Red',
-      price: 25.0,
-      quantity: 1,
    },
    {
       variationId: 2,
@@ -165,8 +136,6 @@ export const Variation = [
       inventoryItemId: 1,
       image: '/iphone11blue/test.jpg',
       name: 'iPhone 11 Screen Blue',
-      price: 30.0,
-      quantity: 4,
    },
    {
       variationId: 3,
@@ -174,8 +143,6 @@ export const Variation = [
       inventoryItemId: 2,
       image: '/samsungs20ultraglass/test.jpg',
       name: 'Samsung S20 Ultra Glass',
-      price: 10.0,
-      quantity: 3,
    },
    {
       variationId: 4,
@@ -183,8 +150,6 @@ export const Variation = [
       inventoryItemId: 2,
       image: '/samsungs20ultraplastic/test.jpg',
       name: 'Samsung S20 Ultra Plastic',
-      price: 5.0,
-      quantity: 2,
    },
    {
       variationId: 5,
@@ -192,8 +157,6 @@ export const Variation = [
       inventoryItemId: 3,
       image: '/logitechg502wired/test.jpg',
       name: 'Logitech G502 HERO Wired',
-      price: 60.0,
-      quantity: 2,
    },
    {
       variationId: 6,
@@ -201,8 +164,6 @@ export const Variation = [
       inventoryItemId: 3,
       image: '/logitechg502wireless/test.jpg',
       name: 'Logitech G502 HERO Wireless',
-      price: 80.0,
-      quantity: 3,
    },
    {
       variationId: 7,
@@ -210,8 +171,89 @@ export const Variation = [
       inventoryItemId: 4,
       image: '/appleairpodswhite/test.jpg',
       name: 'Apple AirPods Pro White',
-      price: 200.0,
-      quantity: 20,
+   },
+];
+
+export const Location = [
+   {
+      locationId: 1,
+      name: 'Warehouse A',
+      description: 'Main warehouse for storing inventory items.',
+   },
+   {
+      locationId: 2,
+      name: 'Retail Store 1',
+      description: 'Retail store located in downtown.',
+   },
+   {
+      locationId: 3,
+      name: 'Warehouse B',
+      description: 'Overflow warehouse for additional storage.',
+   },
+   {
+      locationId: 4,
+      name: 'Retail Store 2',
+      description: 'Second retail store in the suburbs.',
+   },
+   {
+      locationId: 5,
+      name: 'Warehouse C',
+      description: 'Third warehouse for more inventory.',
+   },
+   {
+      locationId: 6,
+      name: 'Retail Store 3',
+      description: 'Third retail store in the city center.',
+   },
+   {
+      locationId: 7,
+      name: 'Warehouse D',
+      description: 'Fourth warehouse for high-value items.',
+   },
+];
+
+export const VariationOnLocation = [
+   {
+      variationOnLocationId: 1,
+      variationId: 1,
+      locationId: 1,
+      stock: 10,
+   },
+   {
+      variationOnLocationId: 2,
+      variationId: 2,
+      locationId: 2,
+      stock: 5,
+   },
+   {
+      variationOnLocationId: 3,
+      variationId: 3,
+      locationId: 3,
+      stock: 7,
+   },
+   {
+      variationOnLocationId: 4,
+      variationId: 4,
+      locationId: 4,
+      stock: 8,
+   },
+   {
+      variationOnLocationId: 5,
+      variationId: 5,
+      locationId: 5,
+      stock: 6,
+   },
+   {
+      variationOnLocationId: 6,
+      variationId: 6,
+      locationId: 6,
+      stock: 9,
+   },
+   {
+      variationOnLocationId: 7,
+      variationId: 7,
+      locationId: 7,
+      stock: 15,
    },
 ];
 
