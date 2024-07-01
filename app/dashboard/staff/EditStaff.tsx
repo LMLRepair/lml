@@ -37,6 +37,7 @@ const schema = z.object({
   mobileNumber: z.string().min(1, "Staff  is required"),
   email: z.string().min(1, "Staff email is required"),
   location: z.string().min(1, "Staff location is required"),
+  title: z.string().min(1, "Staff title is required"),
   role: z.string().min(1, "Staff role is required"),
 });
 
@@ -49,6 +50,7 @@ interface EditStaffProps {
   email: string;
   location: string;
   role: string;
+  title: string;
 }
 
 const EditStaff = ({
@@ -58,6 +60,7 @@ const EditStaff = ({
   email,
   role,
   location,
+  title,
 }: EditStaffProps) => {
   const [loading, setLoading] = useState(false);
 
@@ -69,6 +72,7 @@ const EditStaff = ({
       email,
       location,
       role,
+      title,
     },
   });
 
@@ -88,6 +92,7 @@ const EditStaff = ({
         email: formData.email,
         location: formData.location,
         role: formData.role,
+        job_title: formData.title,
       });
 
       setLoading(false);
@@ -122,6 +127,20 @@ const EditStaff = ({
                     <Input placeholder="Staff Name" {...field} />
                   </FormControl>
                   {errors.staffName && <p>{errors.staffName.message}</p>}
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Staff Name" {...field} />
+                  </FormControl>
+                  {errors.title && <p>{errors.title.message}</p>}
                 </FormItem>
               )}
             />
