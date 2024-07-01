@@ -117,7 +117,7 @@ model InventoryItem {
   itemsCategory      ItemsCategory      @relation(fields: [itemsCategoryId], references: [itemsCategoryId])
   itemsSubCategory   ItemsSubCategory?  @relation(fields: [itemsSubCategoryId], references: [itemsSubCategoryId])
   vendor             Vendor?            @relation(fields: [vendorId], references: [vendorId])
-  brand              InventoryItemBrand  @relation(fields: [brandId],references: [brandInventoryId])
+  brand              InventoryItemBrand @relation(fields: [brandId], references: [brandInventoryId])
   itemReturns        ItemReturn[]
   lowStockAlerts     LowStockAlert[]
   sales              Sale[]
@@ -126,7 +126,7 @@ model InventoryItem {
   @@index([itemsCategoryId], map: "InventoryItem_itemsCategoryId_fkey")
   @@index([itemsSubCategoryId], map: "InventoryItem_itemsSubCategoryId_fkey")
   @@index([vendorId], map: "InventoryItem_vendorId_fkey")
-  @@index([brandId],map: "InventoryItemBrand_brandId_fkey")
+  @@index([brandId], map: "InventoryItemBrand_brandId_fkey")
 }
 
 model ItemsCategory {
@@ -154,18 +154,28 @@ model Vendor {
 }
 
 model Location {
+<<<<<<< HEAD
   locationId  Int        @id @default(autoincrement())
   name        String     @unique
   description String?
   variations  VariationOnLocation[]
   transfersFrom InternalTransfer[] @relation("fromLocation")
   transfersTo   InternalTransfer[] @relation("toLocation")
+=======
+  locationId    Int                   @id @default(autoincrement())
+  name          String                @unique
+  description   String?
+  variations    VariationOnLocation[]
+  transfersFrom InternalTransfer[]    @relation("fromLocation")
+  transfersTo   InternalTransfer[]    @relation("toLocation")
+>>>>>>> 272553980ed4b8379332025d7fed88156021b003
   stockReturns  ItemReturn[]
 
 }
 
 
 model Variation {
+<<<<<<< HEAD
   variationId     Int               @id @default(autoincrement())
   sku             String            @unique
   inventoryItemId Int
@@ -180,6 +190,36 @@ model Variation {
   ItemReturn       ItemReturn[]
   
   @@index([inventoryItemId])
+=======
+  variationId      Int                   @id @default(autoincrement())
+  sku              String                @unique
+  inventoryItemId  Int
+  image            String?
+  name             String
+  raw              Float                 @default(10)
+  tax              Float                 @default(10.25)
+  shipping         Float                 @default(5)
+  inventoryItem    InventoryItem         @relation(fields: [inventoryItemId], references: [inventoryItemId])
+  locations        VariationOnLocation[]
+  internalTransfer InternalTransfer[]
+  ItemReturn       ItemReturn[]
+
+  @@index([inventoryItemId])
+}
+
+model VariationOnLocation {
+  variationOnLocationId Int       @id @default(autoincrement())
+  variationId           Int
+  locationId            Int
+  stock                 Int // This represents the stock for this variation at this location
+  variation             Variation @relation(fields: [variationId], references: [variationId])
+  location              Location  @relation(fields: [locationId], references: [locationId])
+  date                  DateTime  @default(now())
+
+  @@unique([variationId, locationId])
+  @@index([variationId], map: "VariationOnLocation_variationId_fkey")
+  @@index([locationId], map: "VariationOnLocation_locationId_fkey")
+>>>>>>> 272553980ed4b8379332025d7fed88156021b003
 }
 
 model VariationOnLocation {

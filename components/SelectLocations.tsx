@@ -43,6 +43,7 @@ const SelectLocations: React.FC = () => {
       }
    };
 
+<<<<<<< HEAD
    return (
       <Dialog open={open} onOpenChange={setIsOpen}>
          <DialogTrigger asChild>
@@ -119,6 +120,25 @@ const SelectLocations: React.FC = () => {
       //    ))}
       // </div>
    );
+=======
+  return (
+    <div>
+      {predefinedLocations.map((location) => (
+        <div key={location.locationId}>
+          <label>
+            <input
+              type="checkbox"
+              value={location.locationId}
+              checked={checkedLocations.includes(location.locationId)}
+              onChange={() => handleCheckboxChange(location.locationId)}
+            />
+            {location.name}
+          </label>
+        </div>
+      ))}
+    </div>
+  );
+>>>>>>> 272553980ed4b8379332025d7fed88156021b003
 };
 
 export default SelectLocations;

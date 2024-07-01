@@ -23,13 +23,18 @@
       "paths": {
          "@/*": ["./*"]
       }
+
+      //  "paths": {
+      //    "@/*": ["./*"]
+      //  }
    },
    "include": [
       "next-env.d.ts",
       "**/*.ts",
       "**/*.tsx",
       ".next/types/**/*.ts",
-      "components/website/Services.js"
+      "components/website/Services.js",
+      "forms/test.js"
    ],
    "exclude": ["node_modules"]
 }
