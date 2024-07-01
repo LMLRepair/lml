@@ -39,6 +39,7 @@ const schema = z.object({
   location: z.string().min(1, "Staff location is required"),
   password: z.string().min(1, "Staff role is required"),
   role: z.string().min(1, "Staff role is required"),
+  title: z.string().min(1, "Staff title is required"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -69,7 +70,7 @@ const AddStaff = () => {
         location: formData.location,
         role: formData.role,
         password: hashedPassword,
-        job_title: "Staff",
+        job_title: formData.title,
       });
 
       setLoading(false);
@@ -102,6 +103,20 @@ const AddStaff = () => {
                     <Input placeholder="Staff Name" {...field} />
                   </FormControl>
                   {errors.staffName && <p>{errors.staffName.message}</p>}
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Title</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Staff Name" {...field} />
+                  </FormControl>
+                  {errors.title && <p>{errors.title.message}</p>}
                 </FormItem>
               )}
             />
