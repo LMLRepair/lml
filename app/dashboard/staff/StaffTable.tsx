@@ -60,6 +60,7 @@ function StaffTable({ staff }: StaffTableProps) {
             <TableHead>Email</TableHead>
             <TableHead>Location</TableHead>
             <TableHead>Role</TableHead>
+            <TableHead>Title</TableHead>
             <TableHead>Action</TableHead>
           </TableRow>
         </TableHeader>
@@ -71,6 +72,7 @@ function StaffTable({ staff }: StaffTableProps) {
               <TableCell>{staff.email}</TableCell>
               <TableCell>{staff.location}</TableCell>
               <TableCell>{staff.role}</TableCell>
+              <TableCell>{staff.job_title}</TableCell>
               <TableCell>
                 <EditStaff
                   staffId={staff.staff_id}
@@ -79,6 +81,7 @@ function StaffTable({ staff }: StaffTableProps) {
                   email={staff.email}
                   location={staff.location}
                   role={staff.role}
+                  title={staff.job_title}
                 />
               </TableCell>
             </TableRow>
