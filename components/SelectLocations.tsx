@@ -25,14 +25,8 @@ const SelectLocations: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log("Selected locations:", selectedLocations);
-  };
-
   return (
     <div>
-      <h2>Predefined Locations:</h2>
       {predefinedLocations.map((location) => (
         <div key={location.locationId}>
           <label>
@@ -42,7 +36,7 @@ const SelectLocations: React.FC = () => {
               checked={checkedLocations.includes(location.locationId)}
               onChange={() => handleCheckboxChange(location.locationId)}
             />
-            {location.name} (Stock: {location.stock})
+            {location.name}
           </label>
         </div>
       ))}

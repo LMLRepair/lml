@@ -99,7 +99,8 @@ model Staff {
   location      String
   role          String @default("admin")
   password      String @db.VarChar(255)
-  posts          Post[]
+  job_title     String @default("technician")
+  posts         Post[]
 }
 
 model InventoryItem {
@@ -110,15 +111,13 @@ model InventoryItem {
   itemsSubCategoryId Int?
   vendorId           Int?
   brandId            Int
-  locationId         Int?
   image              String
   internalTransfers  InternalTransfer[]
   inventoryAge       InventoryAge[]
   itemsCategory      ItemsCategory      @relation(fields: [itemsCategoryId], references: [itemsCategoryId])
   itemsSubCategory   ItemsSubCategory?  @relation(fields: [itemsSubCategoryId], references: [itemsSubCategoryId])
-  location           Location?          @relation(fields: [locationId], references: [locationId])
   vendor             Vendor?            @relation(fields: [vendorId], references: [vendorId])
-  brand              InventoryItemBrand  @relation(fields: [brandId],references: [brandInventoryId])
+  brand              InventoryItemBrand @relation(fields: [brandId], references: [brandInventoryId])
   itemReturns        ItemReturn[]
   lowStockAlerts     LowStockAlert[]
   sales              Sale[]
@@ -126,9 +125,8 @@ model InventoryItem {
 
   @@index([itemsCategoryId], map: "InventoryItem_itemsCategoryId_fkey")
   @@index([itemsSubCategoryId], map: "InventoryItem_itemsSubCategoryId_fkey")
-  @@index([locationId], map: "InventoryItem_locationId_fkey")
   @@index([vendorId], map: "InventoryItem_vendorId_fkey")
-  @@index([brandId],map: "InventoryItemBrand_brandId_fkey")
+  @@index([brandId], map: "InventoryItemBrand_brandId_fkey")
 }
 
 model ItemsCategory {
@@ -156,28 +154,44 @@ model Vendor {
 }
 
 model Location {
-  locationId    Int                @id @default(autoincrement())
-  name          String
+  locationId    Int                   @id @default(autoincrement())
+  name          String                @unique
   description   String?
-  transfersFrom InternalTransfer[] @relation("fromLocation")
-  transfersTo   InternalTransfer[] @relation("toLocation")
-  items         InventoryItem[]
+  variations    VariationOnLocation[]
+  transfersFrom InternalTransfer[]    @relation("fromLocation")
+  transfersTo   InternalTransfer[]    @relation("toLocation")
   stockReturns  ItemReturn[]
 }
 
 model Variation {
-  variationId      Int                @id @default(autoincrement())
-  sku              String             @unique
+  variationId      Int                   @id @default(autoincrement())
+  sku              String                @unique
   inventoryItemId  Int
-  image            String
+  image            String?
   name             String
-  price            Float
-  quantity         Int
-  inventoryItem    InventoryItem      @relation(fields: [inventoryItemId], references: [inventoryItemId])
-  InternalTransfer InternalTransfer[]
+  raw              Float                 @default(10)
+  tax              Float                 @default(10.25)
+  shipping         Float                 @default(5)
+  inventoryItem    InventoryItem         @relation(fields: [inventoryItemId], references: [inventoryItemId])
+  locations        VariationOnLocation[]
+  internalTransfer InternalTransfer[]
   ItemReturn       ItemReturn[]
 
-  @@index([inventoryItemId], map: "Variation_inventoryItemId_fkey")
+  @@index([inventoryItemId])
+}
+
+model VariationOnLocation {
+  variationOnLocationId Int       @id @default(autoincrement())
+  variationId           Int
+  locationId            Int
+  stock                 Int // This represents the stock for this variation at this location
+  variation             Variation @relation(fields: [variationId], references: [variationId])
+  location              Location  @relation(fields: [locationId], references: [locationId])
+  date                  DateTime  @default(now())
+
+  @@unique([variationId, locationId])
+  @@index([variationId], map: "VariationOnLocation_variationId_fkey")
+  @@index([locationId], map: "VariationOnLocation_locationId_fkey")
 }
 
 model InternalTransfer {
@@ -194,19 +208,17 @@ model InternalTransfer {
   toLocation         Location      @relation("toLocation", fields: [toLocationId], references: [locationId])
   variation          Variation     @relation(fields: [variationId], references: [variationId])
 
-
   @@index([fromLocationId], map: "InternalTransfer_fromLocationId_fkey")
   @@index([inventoryItemId], map: "InternalTransfer_inventoryItemId_fkey")
   @@index([toLocationId], map: "InternalTransfer_toLocationId_fkey")
   @@index([variationId], map: "InternalTransfer_variationId_fkey")
- 
 }
 
 model InventoryItemBrand {
-  brandInventoryId    Int                @id @default(autoincrement())
-  brandInventoryName  String
-  description         String
-  items         InventoryItem[]
+  brandInventoryId   Int             @id @default(autoincrement())
+  brandInventoryName String
+  description        String
+  items              InventoryItem[]
 }
 
 model Sale {
@@ -297,7 +309,6 @@ model Customer {
   customer_address String
 }
 
-
 model BlogCategory {
   blogCategoryId Int    @id @default(autoincrement())
   name           String @unique
@@ -314,14 +325,23 @@ model Post {
   published       Boolean      @default(false)
   createdAt       DateTime     @default(now())
   updatedAt       DateTime     @updatedAt
-  author          Staff        @relation(fields: [authorId], references: [staff_id])
-  blogCategory    BlogCategory @relation(fields: [blogCategoryId], references: [blogCategoryId])
   metaTitle       String?
   metaDescription String?
   publishedAt     DateTime?
+  author          Staff        @relation(fields: [authorId], references: [staff_id])
+  blogCategory    BlogCategory @relation(fields: [blogCategoryId], references: [blogCategoryId])
 
   @@index([blogCategoryId], map: "Posts_blogCategoryId_fkey")
 }
 
+model Leave {
+  leave_id    Int    @id @default(autoincrement())
+  start_date  String
+  end_date    String
+  type        String
+  description String
+  status      String @default("pending")
+  staff_id    Int
 
-
+  @@index([staff_id])
+}

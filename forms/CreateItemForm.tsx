@@ -39,6 +39,7 @@ import VariationTable from "../components/VariationsTable";
 import Image from "next/image";
 import AddVariation from "../components/AddVariation";
 import SelectLocations from "@/components/SelectLocations";
+import useFormStore, { useLocation } from "@/app/store";
 
 type Inputs = {
   item: string;
@@ -80,7 +81,6 @@ function CreateNewItemForm({
   const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const { setClose } = useModal();
-
   const {
     register,
     handleSubmit,
@@ -90,12 +90,6 @@ function CreateNewItemForm({
   const [image, setImage] = useState<File | null | string>(null);
   const [preview, setPreview] = useState<any>(null);
   const [variationsData, setVariationsData] = useState<Variation[]>([]);
-  const [selectedLocations, setSelectedLocations] =
-    useState<SelectedLocationsType>([]);
-
-  const handleSelectedLocations = (checkedLocations: any) => {
-    setSelectedLocations(checkedLocations);
-  };
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
